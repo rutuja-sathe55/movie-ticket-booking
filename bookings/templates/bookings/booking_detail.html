@@ -1,0 +1,813 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Booking Details - CineBook{% endblock %}
+
+{% block content %}
+<style>
+    .booking-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 50px 0;
+        margin-bottom: 40px;
+    }
+
+    .booking-header h1 {
+        font-weight: 700;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+
+    .booking-id {
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
+
+    .detail-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .detail-card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+    }
+
+    .card-header-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .card-body-custom {
+        padding: 25px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #666;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        font-weight: 700;
+        color: #2d2d2d;
+        font-size: 1rem;
+    }
+
+    .status-badge {
+        padding: 8px 16px !important;
+        font-size: 0.9rem !important;
+        border-radius: 8px;
+        font-weight: 700;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    .status-badge.bg-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    }
+
+    .status-badge.bg-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%) !important;
+    }
+
+    .status-badge.bg-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    }
+
+    .movie-details-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 12px;
+        padding: 25px;
+        border-left: 4px solid #667eea;
+    }
+
+    .movie-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #2d2d2d;
+        margin-bottom: 15px;
+    }
+
+    .show-detail-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 10px 0;
+    }
+
+    .show-detail-icon {
+        font-size: 1.3rem;
+        color: #667eea;
+        width: 30px;
+        text-align: center;
+    }
+
+    .show-detail-text {
+        flex: 1;
+    }
+
+    .show-detail-label {
+        font-size: 0.85rem;
+        color: #999;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-bottom: 3px;
+    }
+
+    .show-detail-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2d2d2d;
+    }
+
+    .tickets-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .tickets-table thead {
+        background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    }
+
+    .tickets-table th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 700;
+        color: #667eea;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .tickets-table td {
+        padding: 15px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .tickets-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .tickets-table tbody tr:hover {
+        background: rgba(102, 126, 234, 0.05);
+    }
+
+    .seat-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-weight: 700;
+        display: inline-block;
+    }
+
+    .ticket-id {
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        color: #667eea;
+    }
+
+    .action-buttons {
+        display: grid;
+        gap: 12px;
+    }
+
+    .btn-action {
+        padding: 12px 20px;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-action.success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .btn-action.success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
+        color: white;
+    }
+
+    .btn-action.info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+        color: white;
+    }
+
+    .btn-action.info:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(6, 182, 212, 0.4);
+        color: white;
+    }
+
+    .btn-action.warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+        color: white;
+    }
+
+    .btn-action.warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(245, 158, 11, 0.4);
+        color: white;
+    }
+
+    .btn-action.secondary {
+        background: white;
+        color: #2d2d2d;
+        border: 2px solid #e5e7eb;
+    }
+
+    .btn-action.secondary:hover {
+        border-color: #667eea;
+        color: #667eea;
+        background: rgba(102, 126, 234, 0.05);
+    }
+
+    .payment-info-card {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        border-left: 4px solid #10b981;
+        border-radius: 8px;
+        padding: 20px;
+    }
+
+    .payment-info-card h5 {
+        color: #065f46;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .payment-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        color: #047857;
+    }
+
+    .payment-info-row strong {
+        font-weight: 600;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        opacity: 0.3;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    @media (max-width: 768px) {
+        .booking-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .info-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .tickets-table {
+            font-size: 0.9rem;
+        }
+
+        .tickets-table th,
+        .tickets-table td {
+            padding: 10px;
+        }
+    }
+</style>
+
+<!-- Booking Header -->
+<div class="booking-header">
+    <div class="container">
+        <h1>
+            <i class="fas fa-receipt me-3"></i>Booking Details
+        </h1>
+        <div class="booking-id">
+            <i class="fas fa-hashtag"></i> Booking #{{ booking.booking_id }}
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row gap-4">
+        <div class="col-lg-8">
+            <!-- Booking Status Card -->
+            <div class="detail-card">
+                <div class="card-header-custom">
+                    <i class="fas fa-info-circle me-2"></i>Booking Information
+                </div>
+                <div class="card-body-custom">
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="fas fa-check-circle me-2"></i>Status
+                        </span>
+                        <span class="status-badge bg-{% if booking.status == 'confirmed' %}success{% elif booking.status == 'pending' %}warning{% else %}danger{% endif %}">
+                            {{ booking.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="fas fa-calendar me-2"></i>Booking Date
+                        </span>
+                        <span class="info-value">{{ booking.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="fas fa-rupee-sign me-2"></i>Total Amount
+                        </span>
+                        <span class="info-value" style="color: #10b981;">₹{{ booking.final_amount }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">
+                            <i class="fas fa-tag me-2"></i>Discount
+                        </span>
+                        <span class="info-value" style="color: #ef4444;">-₹{{ booking.discount_amount }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Movie & Show Details -->
+            <div class="detail-card">
+                <div class="card-header-custom">
+                    <i class="fas fa-film me-2"></i>Movie & Show Details
+                </div>
+                <div class="card-body-custom">
+                    {% if tickets %}
+                        {% with ticket=tickets.first %}
+                            <div class="movie-details-card">
+                                <h3 class="movie-title">{{ ticket.show.movie.title }}</h3>
+                                
+                                <div class="show-detail-row">
+                                    <div class="show-detail-icon">
+                                        <i class="fas fa-building"></i>
+                                    </div>
+                                    <div class="show-detail-text">
+                                        <div class="show-detail-label">Theatre</div>
+                                        <div class="show-detail-value">{{ ticket.show.screen.theatre.name }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="show-detail-row">
+                                    <div class="show-detail-icon">
+                                        <i class="fas fa-tv"></i>
+                                    </div>
+                                    <div class="show-detail-text">
+                                        <div class="show-detail-label">Screen</div>
+                                        <div class="show-detail-value">{{ ticket.show.screen.name }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="show-detail-row">
+                                    <div class="show-detail-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="show-detail-text">
+                                        <div class="show-detail-label">Date & Time</div>
+                                        <div class="show-detail-value">{{ ticket.show.show_date|date:"d M Y" }} at {{ ticket.show.show_time|time:"H:i" }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endwith %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Tickets Section -->
+            <div class="detail-card">
+                <div class="card-header-custom">
+                    <i class="fas fa-ticket-alt me-2"></i>Tickets ({{ tickets|length }})
+                </div>
+                <div class="card-body-custom">
+                    {% if tickets %}
+                        <div class="tickets-container">
+                            {% for ticket in tickets %}
+                                <div class="ticket-card">
+                                    <!-- Left Section: Ticket Visual -->
+                                    <div class="ticket-left">
+                                        <div class="ticket-header">
+                                            <span class="ticket-type">E-TICKET</span>
+                                            <span class="ticket-number">#{{ ticket.ticket_id }}</span>
+                                        </div>
+                                        <div class="ticket-content">
+                                            <div class="movie-section">
+                                                <div class="movie-title-small">{{ ticket.show.movie.title }}</div>
+                                                <div class="ticket-divider"></div>
+                                            </div>
+                                            <div class="details-grid">
+                                                <div class="detail-item">
+                                                    <span class="detail-label">SEAT</span>
+                                                    <span class="detail-value seat-value">{{ ticket.seat.row }}{{ ticket.seat.seat_number }}</span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <span class="detail-label">SCREEN</span>
+                                                    <span class="detail-value">{{ ticket.show.screen.name }}</span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <span class="detail-label">DATE</span>
+                                                    <span class="detail-value">{{ ticket.show.show_date|date:"d M" }}</span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <span class="detail-label">TIME</span>
+                                                    <span class="detail-value">{{ ticket.show.show_time|time:"H:i" }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Perforation (Middle Divider) -->
+                                    <div class="ticket-perforation"></div>
+                                    
+                                    <!-- Right Section: QR & Action -->
+                                    <div class="ticket-right">
+                                        <div class="qr-section">
+                                            <div class="qr-placeholder">
+                                                <i class="fas fa-qrcode"></i>
+                                            </div>
+                                            <div class="ticket-footer-info">
+                                                <div class="price-tag">₹{{ ticket.final_price }}</div>
+                                                <div class="booking-ref">Booking: {{ booking.booking_id|truncatechars:8 }}</div>
+                                            </div>
+                                        </div>
+                                        {% if booking.status == 'confirmed' %}
+                                            <a href="{% url 'bookings:download_ticket' ticket.ticket_id %}" class="ticket-download-btn">
+                                                <i class="fas fa-download"></i> Download
+                                            </a>
+                                        {% else %}
+                                            <div class="ticket-status-badge">{{ booking.get_status_display }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-inbox empty-state-icon"></i>
+                            <p>No tickets available</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <style>
+                .tickets-container {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 24px;
+                }
+
+                .ticket-card {
+                    display: flex;
+                    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+                    border: 2px solid #667eea;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+                    transition: all 0.3s ease;
+                    min-height: 200px;
+                }
+
+                .ticket-card:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.25);
+                    border-color: #764ba2;
+                }
+
+                .ticket-left {
+                    flex: 1;
+                    padding: 24px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
+                    border-right: 2px dashed #667eea;
+                }
+
+                .ticket-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 16px;
+                }
+
+                .ticket-type {
+                    display: inline-block;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 6px 12px;
+                    border-radius: 4px;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
+                    text-transform: uppercase;
+                }
+
+                .ticket-number {
+                    font-family: 'Courier New', monospace;
+                    font-weight: 700;
+                    color: #667eea;
+                    font-size: 0.9rem;
+                }
+
+                .ticket-content {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .movie-section {
+                    margin-bottom: 16px;
+                }
+
+                .movie-title-small {
+                    font-size: 1.2rem;
+                    font-weight: 700;
+                    color: #2d2d2d;
+                    margin-bottom: 12px;
+                    line-height: 1.3;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                }
+
+                .ticket-divider {
+                    height: 2px;
+                    background: linear-gradient(90deg, transparent, #667eea, transparent);
+                    margin-bottom: 12px;
+                }
+
+                .details-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 16px;
+                }
+
+                .detail-item {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .detail-label {
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    color: #999;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 4px;
+                }
+
+                .detail-value {
+                    font-size: 1rem;
+                    font-weight: 600;
+                    color: #2d2d2d;
+                }
+
+                .seat-value {
+                    font-size: 1.4rem;
+                    color: #667eea;
+                    font-weight: 700;
+                }
+
+                .ticket-perforation {
+                    width: 30px;
+                    background: repeating-linear-gradient(
+                        90deg,
+                        #667eea 0px,
+                        #667eea 10px,
+                        transparent 10px,
+                        transparent 15px
+                    );
+                    position: relative;
+                    cursor: grab;
+                }
+
+                .ticket-right {
+                    flex: 0 0 200px;
+                    padding: 24px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    align-items: center;
+                    background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%);
+                }
+
+                .qr-section {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 12px;
+                }
+
+                .qr-placeholder {
+                    width: 120px;
+                    height: 120px;
+                    border: 2px solid #667eea;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 2rem;
+                    color: #667eea;
+                    background: rgba(102, 126, 234, 0.05);
+                }
+
+                .ticket-footer-info {
+                    text-align: center;
+                }
+
+                .price-tag {
+                    font-size: 1.6rem;
+                    font-weight: 700;
+                    color: #667eea;
+                    margin-bottom: 4px;
+                }
+
+                .booking-ref {
+                    font-size: 0.75rem;
+                    color: #999;
+                    font-family: 'Courier New', monospace;
+                }
+
+                .ticket-download-btn {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    padding: 12px 20px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                    text-decoration: none;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    width: 100%;
+                    text-align: center;
+                }
+
+                .ticket-download-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                    text-decoration: none;
+                    color: white;
+                }
+
+                .ticket-download-btn:active {
+                    transform: translateY(0);
+                }
+
+                .ticket-status-badge {
+                    display: inline-block;
+                    padding: 8px 16px;
+                    background: #ffc107;
+                    color: #2d2d2d;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    font-size: 0.85rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
+                @media (max-width: 768px) {
+                    .ticket-card {
+                        flex-direction: column;
+                        min-height: auto;
+                    }
+
+                    .ticket-left {
+                        border-right: none;
+                        border-bottom: 2px dashed #667eea;
+                        padding: 20px;
+                    }
+
+                    .ticket-perforation {
+                        width: 100%;
+                        height: 30px;
+                        background: repeating-linear-gradient(
+                            0deg,
+                            #667eea 0px,
+                            #667eea 10px,
+                            transparent 10px,
+                            transparent 15px
+                        );
+                    }
+
+                    .ticket-right {
+                        flex: 1;
+                        padding: 20px;
+                    }
+
+                    .details-grid {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
+
+                    .qr-placeholder {
+                        width: 100px;
+                        height: 100px;
+                        font-size: 1.5rem;
+                    }
+                }
+            </style>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Actions Card -->
+            <div class="detail-card">
+                <div class="card-header-custom">
+                    <i class="fas fa-bolt me-2"></i>Actions
+                </div>
+                <div class="card-body-custom">
+                    <div class="action-buttons">
+                        {% if booking.status == 'pending' %}
+                            <a href="{% url 'payments:payment_gateway' booking.pk %}" class="btn-action success">
+                                <i class="fas fa-credit-card"></i>Make Payment
+                            </a>
+                        {% elif booking.status == 'confirmed' %}
+                                {% if payment %}
+                                    <a href="{% url 'payments:invoice' payment.pk %}?download=1" class="btn-action info">
+                                        <i class="fas fa-file-pdf"></i>Download Invoice
+                                    </a>
+                                {% endif %}
+                                <a href="{% url 'bookings:cancel_booking' booking.pk %}" class="btn-action warning" onclick="return confirm('Are you sure you want to cancel this booking?')">
+                                    <i class="fas fa-times"></i>Cancel Booking
+                                </a>
+                            {% endif %}
+                        <a href="{% url 'bookings:booking_list' %}" class="btn-action secondary">
+                            <i class="fas fa-arrow-left"></i>Back to Bookings
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Information -->
+            {% if payment %}
+                <div class="payment-info-card">
+                    <h5>
+                        <i class="fas fa-credit-card me-2"></i>Payment Information
+                    </h5>
+                    <div class="payment-info-row">
+                        <strong>Payment ID:</strong>
+                        <span>{{ payment.payment_id }}</span>
+                    </div>
+                    <div class="payment-info-row">
+                        <strong>Status:</strong>
+                        <span class="badge bg-{% if payment.status == 'completed' %}success{% else %}warning{% endif %}" style="padding: 6px 10px; font-size: 0.85rem;">
+                            {{ payment.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="payment-info-row">
+                        <strong>Amount:</strong>
+                        <span style="font-weight: 700;">₹{{ payment.amount }}</span>
+                    </div>
+                    <div class="payment-info-row">
+                        <strong>Date:</strong>
+                        <span>{{ payment.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

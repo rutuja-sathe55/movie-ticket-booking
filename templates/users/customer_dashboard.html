@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_attrs %}data-page="customer-dashboard"{% endblock %}
+
+{% block title %}Customer Dashboard - {{ page_title }}{% endblock %}
+
+{% block content %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #00C2FF 0%, #7C3AED 100%);
+        color: white;
+        padding: 50px 0;
+        margin-bottom: 40px;
+    }
+
+    .dashboard-header h1 {
+        font-weight: 700;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+
+    .dashboard-header .welcome-text {
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        border-top: 4px solid #00C2FF;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+
+    .stat-card h5 {
+        font-weight: 700;
+        color: #2d2d2d;
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-card p {
+        margin: 0;
+        color: #666;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2d2d2d;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-title i {
+        color: #667eea;
+    }
+
+    .booking-card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        border-left: 5px solid #667eea;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+
+    .booking-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    }
+
+    .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 15px;
+    }
+
+    .booking-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2d2d2d;
+    }
+
+    .booking-status {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-confirmed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-cancelled {
+        background: #fee2e2;
+        color: #7f1d1d;
+    }
+
+    .booking-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-label {
+        font-size: 0.85rem;
+        color: #999;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+        color: #2d2d2d;
+        font-weight: 600;
+    }
+
+    .booking-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .btn-view {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-view:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #ddd;
+        margin-bottom: 20px;
+    }
+
+    .empty-state p {
+        color: #999;
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+    }
+
+    .btn-primary {
+        display: inline-block;
+        padding: 12px 30px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+</style>
+
+<div class="dashboard-header">
+    <div class="container">
+        <h1><i class="fas fa-user-circle me-3"></i>Welcome, {{ request.user.get_full_name|default:request.user.username }}!</h1>
+        <p class="welcome-text">Here's your cinema booking dashboard</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Stats -->
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <h5><i class="fas fa-ticket-alt"></i> Total Bookings</h5>
+            <p class="stat-value">{{ recent_bookings|length }}</p>
+        </div>
+        <div class="stat-card">
+            <h5><i class="fas fa-user me-2"></i>Profile Status</h5>
+            <p><span style="color: #10b981; font-weight: 600;">✓ Active</span></p>
+            <p style="font-size: 0.9rem; margin-top: 10px;">{{ request.user.email }}</p>
+        </div>
+        <div class="stat-card">
+            <h5><i class="fas fa-gear me-2"></i>Quick Actions</h5>
+            <p>
+                <a href="{% url 'users:edit_profile' %}" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                    Edit Profile →
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Recent Bookings -->
+    <div style="margin-bottom: 40px;">
+        <h2 class="section-title">
+            <i class="fas fa-calendar-check"></i> Recent Bookings
+        </h2>
+
+        {% if recent_bookings %}
+            {% for booking in recent_bookings %}
+                <div class="booking-card">
+                    <div class="booking-header">
+                        <div>
+                            <div class="booking-title">{{ booking.show.movie.title }}</div>
+                            <p style="color: #666; font-size: 0.9rem; margin-top: 4px;">
+                                Booking ID: <strong>{{ booking.booking_id }}</strong>
+                            </p>
+                        </div>
+                        <span class="booking-status status-{{ booking.status }}">
+                            {{ booking.get_status_display }}
+                        </span>
+                    </div>
+
+                    <div class="booking-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Theatre</span>
+                            <span class="detail-value">{{ booking.show.screen.theatre.name }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Show Date</span>
+                            <span class="detail-value">{{ booking.show.show_date|date:"d M Y" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Show Time</span>
+                            <span class="detail-value">{{ booking.show.show_time|time:"H:i" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Total Amount</span>
+                            <span class="detail-value" style="color: #667eea;">₹{{ booking.final_amount }}</span>
+                        </div>
+                    </div>
+
+                    <div class="booking-actions">
+                        <a href="{% url 'bookings:booking_detail' booking.pk %}" class="btn-view">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                        {% if booking.status == 'pending' %}
+                            <a href="{% url 'payments:process_payment' booking.pk %}" class="btn-view" style="background: #f59e0b;">
+                                <i class="fas fa-credit-card"></i> Pay Now
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <p>No bookings yet. Start exploring movies!</p>
+                <a href="{% url 'movies:movie_list' %}" class="btn-primary">
+                    <i class="fas fa-film"></i> Browse Movies
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Links -->
+    <div style="background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 40px;">
+        <h3 style="margin-bottom: 20px; font-weight: 700;">Quick Links</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+            <a href="{% url 'movies:movie_list' %}" style="padding: 15px; background: #f3f4f6; border-radius: 8px; text-decoration: none; color: #2d2d2d; font-weight: 600; text-align: center; transition: all 0.3s;">
+                <i class="fas fa-film me-2"></i> Browse Movies
+            </a>
+            <a href="{% url 'bookings:booking_list' %}" style="padding: 15px; background: #f3f4f6; border-radius: 8px; text-decoration: none; color: #2d2d2d; font-weight: 600; text-align: center; transition: all 0.3s;">
+                <i class="fas fa-list me-2"></i> All Bookings
+            </a>
+            <a href="{% url 'food:menu' %}" style="padding: 15px; background: #f3f4f6; border-radius: 8px; text-decoration: none; color: #2d2d2d; font-weight: 600; text-align: center; transition: all 0.3s;">
+                <i class="fas fa-utensils me-2"></i> Food Menu
+            </a>
+            <a href="{% url 'users:edit_profile' %}" style="padding: 15px; background: #f3f4f6; border-radius: 8px; text-decoration: none; color: #2d2d2d; font-weight: 600; text-align: center; transition: all 0.3s;">
+                <i class="fas fa-user-edit me-2"></i> Edit Profile
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

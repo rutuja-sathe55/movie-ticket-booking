@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_attrs %}data-page="register"{% endblock %}
+
+{% block title %}Register - CineBook{% endblock %}
+
+{% block content %}
+<!-- Register Header -->
+<div style="background: linear-gradient(135deg, #00C2FF 0%, #7C3AED 100%); color: white; padding: 60px 0 40px;">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-2">Join CineBook!</h1>
+        <p class="lead" style="opacity: 0.95;">Create your account and start booking your favorite movies</p>
+    </div>
+</div>
+
+<!-- Register Form -->
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-5">
+                    <h3 class="card-title text-center fw-bold mb-4">
+                        <i class="fas fa-user-plus me-2" style="color: var(--accent-color);"></i>Register
+                    </h3>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Username Field -->
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label fw-bold">
+                                <i class="fas fa-user me-2" style="color: var(--accent-color);"></i>Username
+                            </label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="alert alert-danger mt-2" style="padding: 8px 12px; font-size: 0.85rem;">
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ form.username.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Email Field -->
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label fw-bold">
+                                <i class="fas fa-envelope me-2" style="color: var(--accent-color);"></i>Email Address
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="alert alert-danger mt-2" style="padding: 8px 12px; font-size: 0.85rem;">
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ form.email.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- First Name Field -->
+                        <div class="mb-3">
+                            <label for="id_first_name" class="form-label fw-bold">First Name</label>
+                            {{ form.first_name }}
+                        </div>
+                        
+                        <!-- Last Name Field -->
+                        <div class="mb-3">
+                            <label for="id_last_name" class="form-label fw-bold">Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+                        
+                        <!-- Password Field -->
+                        <div class="mb-3">
+                            <label for="id_password1" class="form-label fw-bold">
+                                <i class="fas fa-lock me-2" style="color: var(--accent-color);"></i>Password
+                            </label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                                <div class="alert alert-danger mt-2" style="padding: 8px 12px; font-size: 0.85rem;">
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ form.password1.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Confirm Password Field -->
+                        <div class="mb-4">
+                            <label for="id_password2" class="form-label fw-bold">
+                                <i class="fas fa-lock me-2" style="color: var(--accent-color);"></i>Confirm Password
+                            </label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                                <div class="alert alert-danger mt-2" style="padding: 8px 12px; font-size: 0.85rem;">
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ form.password2.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold mb-4">
+                            <i class="fas fa-check me-2"></i>Create Account
+                        </button>
+                    </form>
+                    
+                    <!-- Divider -->
+                    <div style="position: relative; text-align: center; margin: 20px 0;">
+                        <hr>
+                        <span style="background: white; padding: 0 10px; color: var(--text-light); font-size: 0.85rem;">OR</span>
+                    </div>
+                    
+                    <!-- Login Link -->
+                    <div class="text-center">
+                        <p style="color: var(--text-light); margin-bottom: 15px;">Already have an account?</p>
+                        <a href="{% url 'users:login' %}" class="btn btn-outline-primary w-100 btn-lg fw-bold">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Info Card -->
+            <div class="card border-0 shadow-sm mt-4" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-left: 4px solid var(--accent-color);">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">Benefits of Registration</h6>
+                    <ul style="margin-left: 20px; margin-bottom: 0; font-size: 0.9rem;">
+                        <li>Easy ticket booking</li>
+                        <li>Save your preferences</li>
+                        <li>Order food online</li>
+                        <li>Track your bookings</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #id_username, #id_email, #id_first_name, #id_last_name, #id_password1, #id_password2 {
+        border-radius: 10px !important;
+    }
+</style>
+{% endblock %}

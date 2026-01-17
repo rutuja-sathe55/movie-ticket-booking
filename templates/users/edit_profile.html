@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_attrs %}data-page="edit-profile"{% endblock %}
+
+{% block title %}Edit Profile - {{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/user_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    {% if user.profile.profile_picture %}
+                        <img src="{{ user.profile.profile_picture.url }}" class="rounded-circle mb-3 profile-img" alt="{{ user.username }}">
+                    {% else %}
+                        <div class="rounded-circle mb-3 profile-placeholder">
+                            <i class="fas fa-user fa-3x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    <h5 class="card-title">{{ user.get_full_name|default:user.username }}</h5>
+                    <p class="text-muted">{{ user.email }}</p>
+                    <a href="{% url 'users:dashboard' %}" class="btn btn-primary btn-sm mt-2 w-100">View Dashboard</a>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <a href="{% url 'users:profile' %}" class="list-group-item list-group-item-action">Profile Overview</a>
+                    <a href="{% url 'users:edit_profile' %}" class="list-group-item list-group-item-action active">Edit Profile</a>
+                    <a href="{% url 'bookings:booking_list' %}" class="list-group-item list-group-item-action">My Bookings</a>
+                    <a href="{% url 'users:logout' %}" class="list-group-item list-group-item-action">Logout</a>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Edit Profile</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">First name</label>
+                                {{ form.first_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Last name</label>
+                                {{ form.last_name }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Email</label>
+                                {{ form.email }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Phone</label>
+                                {{ form.phone_number }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">City</label>
+                                {{ form.city }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Address</label>
+                                {{ form.address }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Postal Code</label>
+                                {{ form.postal_code }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Date of Birth</label>
+                                {{ form.date_of_birth }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Profile Picture</label>
+                                {{ form.profile_picture }}
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-between">
+                            <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-success">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

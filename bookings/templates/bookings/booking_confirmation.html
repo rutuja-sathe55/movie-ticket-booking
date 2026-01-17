@@ -1,0 +1,427 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Booking Confirmed - CineBook{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <!-- Success Message -->
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <h4 class="alert-heading"><i class="fas fa-check-circle"></i> Booking Confirmed!</h4>
+                <p>Your booking has been confirmed. Your tickets are ready to download.</p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Booking Details -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Booking Confirmation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Booking ID:</strong> <span class="badge bg-primary">{{ booking.booking_id }}</span></p>
+                            <p><strong>Status:</strong> <span class="badge bg-success">Confirmed</span></p>
+                            <p><strong>Booking Date:</strong> {{ booking.created_at|date:"d M Y, H:i" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Total Amount:</strong> <span class="fs-5">₹{{ booking.final_amount }}</span></p>
+                            <p><strong>Payment Method:</strong> {{ payment.payment_method.name|default:"Online" }}</p>
+                            <p><strong>Payment Status:</strong> <span class="badge bg-success">Completed</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Movie & Show Details -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Movie & Show Details</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Movie:</strong> {{ booking.show.movie.title }}</p>
+                    <p><strong>Theatre:</strong> {{ booking.show.screen.theatre.name }}</p>
+                    <p><strong>Screen:</strong> {{ booking.show.screen.name }}</p>
+                    <p><strong>Date & Time:</strong> {{ booking.show.show_date|date:"d M Y" }} at {{ booking.show.show_time|time:"H:i" }}</p>
+                </div>
+            </div>
+
+            <!-- Tickets -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Your Tickets</h5>
+                </div>
+                <div class="card-body">
+                    {% if booking.tickets.all %}
+                        <div class="tickets-container-confirm">
+                            {% for ticket in booking.tickets.all %}
+                                <div class="ticket-card-confirm">
+                                    <!-- Left Section: Ticket Visual -->
+                                    <div class="ticket-left-confirm">
+                                        <div class="ticket-header-confirm">
+                                            <span class="ticket-type-confirm">E-TICKET</span>
+                                            <span class="ticket-number-confirm">#{{ ticket.ticket_id }}</span>
+                                        </div>
+                                        <div class="ticket-content-confirm">
+                                            <div class="movie-section-confirm">
+                                                <div class="movie-title-confirm">{{ booking.show.movie.title }}</div>
+                                                <div class="ticket-divider-confirm"></div>
+                                            </div>
+                                            <div class="details-grid-confirm">
+                                                <div class="detail-item-confirm">
+                                                    <span class="detail-label-confirm">SEAT</span>
+                                                    <span class="detail-value-confirm seat-value-confirm">{{ ticket.seat.row }}{{ ticket.seat.seat_number }}</span>
+                                                </div>
+                                                <div class="detail-item-confirm">
+                                                    <span class="detail-label-confirm">SCREEN</span>
+                                                    <span class="detail-value-confirm">{{ booking.show.screen.name }}</span>
+                                                </div>
+                                                <div class="detail-item-confirm">
+                                                    <span class="detail-label-confirm">DATE</span>
+                                                    <span class="detail-value-confirm">{{ booking.show.show_date|date:"d M" }}</span>
+                                                </div>
+                                                <div class="detail-item-confirm">
+                                                    <span class="detail-label-confirm">TIME</span>
+                                                    <span class="detail-value-confirm">{{ booking.show.show_time|time:"H:i" }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Perforation (Middle Divider) -->
+                                    <div class="ticket-perforation-confirm"></div>
+                                    
+                                    <!-- Right Section: QR & Action -->
+                                    <div class="ticket-right-confirm">
+                                        <div class="qr-section-confirm">
+                                            <div class="qr-placeholder-confirm">
+                                                <i class="fas fa-qrcode"></i>
+                                            </div>
+                                            <div class="ticket-footer-info-confirm">
+                                                <div class="price-tag-confirm">₹{{ ticket.final_price }}</div>
+                                                <div class="booking-ref-confirm">Booking: {{ booking.booking_id|truncatechars:8 }}</div>
+                                            </div>
+                                        </div>
+                                        {% if ticket.qr_code %}
+                                            <a href="{% url 'bookings:download_ticket' ticket.ticket_id %}" class="ticket-download-btn-confirm">
+                                                <i class="fas fa-download"></i> Download
+                                            </a>
+                                        {% else %}
+                                            <div class="ticket-status-badge-confirm">QR Pending</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No tickets available.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <style>
+                .tickets-container-confirm {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 24px;
+                }
+
+                .ticket-card-confirm {
+                    display: flex;
+                    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+                    border: 2px solid #667eea;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
+                    transition: all 0.3s ease;
+                    min-height: 180px;
+                }
+
+                .ticket-card-confirm:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.25);
+                    border-color: #764ba2;
+                }
+
+                .ticket-left-confirm {
+                    flex: 1;
+                    padding: 24px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
+                    border-right: 2px dashed #667eea;
+                }
+
+                .ticket-header-confirm {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 16px;
+                }
+
+                .ticket-type-confirm {
+                    display: inline-block;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 6px 12px;
+                    border-radius: 4px;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
+                    text-transform: uppercase;
+                }
+
+                .ticket-number-confirm {
+                    font-family: 'Courier New', monospace;
+                    font-weight: 700;
+                    color: #667eea;
+                    font-size: 0.9rem;
+                }
+
+                .ticket-content-confirm {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .movie-section-confirm {
+                    margin-bottom: 12px;
+                }
+
+                .movie-title-confirm {
+                    font-size: 1.1rem;
+                    font-weight: 700;
+                    color: #2d2d2d;
+                    margin-bottom: 10px;
+                    line-height: 1.3;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                }
+
+                .ticket-divider-confirm {
+                    height: 2px;
+                    background: linear-gradient(90deg, transparent, #667eea, transparent);
+                    margin-bottom: 12px;
+                }
+
+                .details-grid-confirm {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 12px;
+                }
+
+                .detail-item-confirm {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .detail-label-confirm {
+                    font-size: 0.65rem;
+                    font-weight: 700;
+                    color: #999;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 2px;
+                }
+
+                .detail-value-confirm {
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    color: #2d2d2d;
+                }
+
+                .seat-value-confirm {
+                    font-size: 1.2rem;
+                    color: #667eea;
+                    font-weight: 700;
+                }
+
+                .ticket-perforation-confirm {
+                    width: 30px;
+                    background: repeating-linear-gradient(
+                        90deg,
+                        #667eea 0px,
+                        #667eea 10px,
+                        transparent 10px,
+                        transparent 15px
+                    );
+                    position: relative;
+                    cursor: grab;
+                }
+
+                .ticket-right-confirm {
+                    flex: 0 0 180px;
+                    padding: 24px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    align-items: center;
+                    background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%);
+                }
+
+                .qr-section-confirm {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                }
+
+                .qr-placeholder-confirm {
+                    width: 100px;
+                    height: 100px;
+                    border: 2px solid #667eea;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.8rem;
+                    color: #667eea;
+                    background: rgba(102, 126, 234, 0.05);
+                }
+
+                .ticket-footer-info-confirm {
+                    text-align: center;
+                }
+
+                .price-tag-confirm {
+                    font-size: 1.4rem;
+                    font-weight: 700;
+                    color: #667eea;
+                    margin-bottom: 2px;
+                }
+
+                .booking-ref-confirm {
+                    font-size: 0.7rem;
+                    color: #999;
+                    font-family: 'Courier New', monospace;
+                }
+
+                .ticket-download-btn-confirm {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 6px;
+                    padding: 10px 16px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    font-size: 0.85rem;
+                    text-decoration: none;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    width: 100%;
+                    text-align: center;
+                }
+
+                .ticket-download-btn-confirm:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                    text-decoration: none;
+                    color: white;
+                }
+
+                .ticket-download-btn-confirm:active {
+                    transform: translateY(0);
+                }
+
+                .ticket-status-badge-confirm {
+                    display: inline-block;
+                    padding: 8px 12px;
+                    background: #ffc107;
+                    color: #2d2d2d;
+                    border-radius: 6px;
+                    font-weight: 600;
+                    font-size: 0.75rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
+                @media (max-width: 768px) {
+                    .ticket-card-confirm {
+                        flex-direction: column;
+                        min-height: auto;
+                    }
+
+                    .ticket-left-confirm {
+                        border-right: none;
+                        border-bottom: 2px dashed #667eea;
+                        padding: 20px;
+                    }
+
+                    .ticket-perforation-confirm {
+                        width: 100%;
+                        height: 30px;
+                        background: repeating-linear-gradient(
+                            0deg,
+                            #667eea 0px,
+                            #667eea 10px,
+                            transparent 10px,
+                            transparent 15px
+                        );
+                    }
+
+                    .ticket-right-confirm {
+                        flex: 1;
+                        padding: 20px;
+                    }
+
+                    .details-grid-confirm {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
+
+                    .qr-placeholder-confirm {
+                        width: 90px;
+                        height: 90px;
+                        font-size: 1.5rem;
+                    }
+                }
+            </style>
+
+            <!-- Important Information -->
+            <div class="card border-warning mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Important Information</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>Please arrive at the theatre <strong>15 minutes before</strong> the show time.</li>
+                        <li>Carry your booking confirmation or ticket QR code for entry.</li>
+                        <li>Cancellations are allowed up to <strong>2 hours before</strong> the show time.</li>
+                        <li>For any queries, contact <strong>{{ settings.CONTACT_EMAIL }}</strong></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2 d-sm-flex">
+                <a href="{% url 'bookings:booking_detail' booking.pk %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-receipt"></i> View Booking Details
+                </a>
+                <a href="{% url 'bookings:booking_list' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-list"></i> My Bookings
+                </a>
+                <a href="{% url 'movies:movie_list' %}" class="btn btn-outline-secondary btn-lg">
+                    <i class="fas fa-film"></i> Book More
+                </a>
+            </div>
+
+            <!-- Divider -->
+            <hr class="my-5">
+
+            <!-- Footer Note -->
+            <p class="text-center text-muted">
+                <small>A confirmation email has been sent to <strong>{{ request.user.email }}</strong></small>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

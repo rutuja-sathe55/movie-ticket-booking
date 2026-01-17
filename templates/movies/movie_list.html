@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_attrs %}data-page="movie-list"{% endblock %}
+
+{% block title %}Now Showing Movies - CineBook{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div style="background: linear-gradient(135deg, #00C2FF 0%, #7C3AED 100%); color: white; padding: 60px 0 40px;">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-2"><i class="fas fa-film me-3"></i>Now Showing</h1>
+        <p class="lead mb-0" style="opacity: 0.95;">Discover the hottest movies running in theatres now. Reserve your favorite seats today!</p>
+        {% if user.is_authenticated %}
+            {% if user.is_superuser or user.role.role == 'admin' or user.role.role == 'theatre_manager' %}
+               
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Search & Filter Section -->
+{% comment %} <section class="py-5" style="background-color: #f5f7fa;">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <form method="get" class="row g-3 align-items-end">
+                    <div class="col-md-3 col-sm-6">
+                        <label for="query" class="form-label fw-bold"><i class="fas fa-search me-2"></i>Search Movies</label>
+                        <input type="text" id="query" name="query" class="form-control form-control-lg" placeholder="Enter movie name..." value="{{ request.GET.query }}">
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <label for="language" class="form-label fw-bold"><i class="fas fa-globe me-2"></i>Language</label>
+                        <select id="language" name="language" class="form-select form-select-lg">
+                            <option value="">All Languages</option>
+                            <option value="hindi" {% if request.GET.language == 'hindi' %}selected{% endif %}>Hindi</option>
+                            <option value="english" {% if request.GET.language == 'english' %}selected{% endif %}>English</option>
+                            <option value="marathi" {% if request.GET.language == 'marathi' %}selected{% endif %}>Marathi</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 col-sm-6">
+                        <label for="certification" class="form-label fw-bold"><i class="fas fa-certificate me-2"></i>Rating</label>
+                        <select id="certification" name="certification" class="form-select form-select-lg">
+                            <option value="">All Ratings</option>
+                            <option value="U" {% if request.GET.certification == 'U' %}selected{% endif %}>U</option>
+                            <option value="UA" {% if request.GET.certification == 'UA' %}selected{% endif %}>UA</option>
+                            <option value="A" {% if request.GET.certification == 'A' %}selected{% endif %}>A</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 col-sm-6">
+                        <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold">
+                            <i class="fas fa-search me-2"></i>Search Movies
+                        </button>
+                    </div>
+                     <div class="mt-3">
+                    <a href="{% url 'movies:add_movie' %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus me-1"></i>  Add Movie
+                    </a>
+                </div> 
+
+
+                </form>
+            </div>
+        </div>
+    </div>
+</section> {% endcomment %}
+
+<section class="py-5" style="background-color: #f5f7fa;">
+    <div class="container">
+        <div class="row mb-4 align-items-end">
+            
+            <div class="col-md-10">
+                <form method="get" class="row g-3 align-items-end">
+                    
+                    <div class="col-md-3 col-sm-6">
+                        <label for="query" class="form-label fw-bold">
+                            <i class="fas fa-search me-2"></i>Search Movies
+                        </label>
+                        <input type="text" id="query" name="query"
+                               class="form-control form-control-lg"
+                               placeholder="Enter movie name..."
+                               value="{{ request.GET.query }}">
+                    </div>
+
+                    <div class="col-md-3 col-sm-6">
+                        <label for="language" class="form-label fw-bold">
+                            <i class="fas fa-globe me-2"></i>Language
+                        </label>
+                        <select id="language" name="language" class="form-select form-select-lg">
+                            <option value="">All Languages</option>
+                            <option value="hindi" {% if request.GET.language == 'hindi' %}selected{% endif %}>Hindi</option>
+                            <option value="english" {% if request.GET.language == 'english' %}selected{% endif %}>English</option>
+                            <option value="marathi" {% if request.GET.language == 'marathi' %}selected{% endif %}>Marathi</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 col-sm-6">
+                        <label for="certification" class="form-label fw-bold">
+                            <i class="fas fa-certificate me-2"></i>Rating
+                        </label>
+                        <select id="certification" name="certification" class="form-select form-select-lg">
+                            <option value="">All Ratings</option>
+                            <option value="U" {% if request.GET.certification == 'U' %}selected{% endif %}>U</option>
+                            <option value="UA" {% if request.GET.certification == 'UA' %}selected{% endif %}>UA</option>
+                            <option value="A" {% if request.GET.certification == 'A' %}selected{% endif %}>A</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 col-sm-6">
+                        <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold">
+                            <i class="fas fa-search me-2"></i>Search Movies
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- Add Movie Button (Right Side) -->
+            {% if request.user.is_authenticated and request.user.is_staff %}
+                <div class="col-md-2 text-end mt-3 mt-md-0">
+                    <a href="{% url 'movies:add_movie' %}" class="btn btn-success btn-lg">
+                      <i class="fas fa-plus me-1"></i> Add Movie
+                     </a>
+                </div>
+
+                        {% endif %}
+
+                </div>
+    </div>
+</section>
+
+
+
+
+<!-- Movies Grid -->
+<section class="py-5">
+    <div class="container">
+        {% if movies %}
+            <div class="row g-4">
+                {% for movie in movies %}
+                <div class="col-lg-3 col-md-6 col-sm-12">
+                    <div class="card h-100 shadow-sm">
+                        {% if movie.poster %}
+                            <div class="position-relative overflow-hidden" style="height: 320px; background: #e0e0e0;">
+                                <img src="{{ movie.poster.url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 100%; object-fit: cover;">
+                                
+                                <!-- Rating Badge -->
+                                <div class="position-absolute top-0 end-0 p-3">
+                                    <span class="badge bg-warning text-dark fw-bold" style="padding: 10px 14px; font-size: 0.9rem;">
+                                        <i class="fas fa-star me-1"></i>{{ movie.rating }}/10
+                                    </span>
+                                </div>
+                                
+                                <!-- Now Showing Badge -->
+                                <div class="position-absolute top-0 start-0 p-3">
+                                    <span class="badge bg-danger fw-bold" style="padding: 8px 12px;">NOW SHOWING</span>
+                                </div>
+                                
+                                <!-- Overlay on Hover -->
+                                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" 
+                                     style="background: rgba(0,0,0,0.7); opacity: 0; transition: opacity 0.3s ease; backdrop-filter: blur(3px);">
+                                    <a href="{% url 'movies:movie_detail' movie.pk %}" class="btn btn-light btn-lg fw-bold">
+                                        <i class="fas fa-eye me-2"></i>View Details
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 320px;">
+                                <i class="fas fa-image fa-5x text-secondary"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold mb-3">{{ movie.title }}</h5>
+                            
+                            <div class="mb-3">
+                                <small style="color: var(--text-light);">
+                                    <i class="fas fa-globe me-1" style="color: var(--accent-color);"></i>
+                                    <strong>{{ movie.get_language_display }}</strong>
+                                </small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <span class="badge bg-danger fw-bold" style="font-size: 0.75rem; padding: 6px 10px;">{{ movie.certification }}</span>
+                                {% for genre in movie.genres.all %}
+                                    <span class="badge bg-success fw-bold" style="font-size: 0.75rem; padding: 6px 10px;">{{ genre.name|truncatewords:1 }}</span>
+                                {% endfor %}
+                            </div>
+                            
+                            <p class="card-text text-muted flex-grow-1" style="font-size: 0.9rem;">{{ movie.description|truncatewords:12 }}</p>
+                            
+                            <div class="mb-3 pb-3" style="border-bottom: 1px solid #e0e0e0;">
+                                <small class="text-muted d-block mb-1">
+                                    <i class="fas fa-clock me-1" style="color: var(--secondary-color);"></i>
+                                    <strong>{{ movie.get_duration_display }}</strong>
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="card-footer bg-white border-top-0">
+                            <a href="{% url 'movies:movie_detail' movie.pk %}" class="btn btn-primary w-100 btn-sm fw-bold">
+                                <i class="fas fa-ticket-alt me-1"></i>Book Tickets
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info text-center py-5" role="alert" style="border-radius: 15px; font-size: 1.1rem;">
+                <div style="font-size: 3rem; margin-bottom: 20px;">
+                    <i class="fas fa-inbox" style="color: var(--accent-color);"></i>
+                </div>
+                <h4 class="fw-bold mb-2">No Movies Found</h4>
+                <p>We couldn't find any movies matching your criteria. Try adjusting your filters or search term.</p>
+                <a href="{% url 'movies:movie_list' %}" class="btn btn-primary mt-3">
+                    <i class="fas fa-redo me-2"></i>Reset Filters
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+    .card {
+        overflow: hidden;
+    }
+    
+    .card .position-absolute[style*="opacity: 0"] {
+        pointer-events: none;
+    }
+    
+    .card:hover .position-absolute[style*="opacity: 0"] {
+        opacity: 1 !important;
+        pointer-events: auto;
+    }
+    
+    .form-control-lg, .form-select-lg {
+        border-radius: 10px !important;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Razorpay Checkout - CineBook{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4"><i class="fas fa-lock"></i> Secure Checkout</h1>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Complete Payment</h5>
+                </div>
+                <div class="card-body">
+                    {% if test_mode %}
+                        <p class="text-warning">Razorpay keys are not configured. This is a TEST checkout — no external payment will be processed.</p>
+                        <form method="post" action="{% url 'payments:razorpay_callback' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="razorpay_order_id" value="{{ razorpay_order_id }}">
+                            <input type="hidden" name="razorpay_payment_id" value="SIMULATED_PAYMENT_{{ payment.pk }}">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check-circle"></i> Simulate Payment Success
+                            </button>
+                        </form>
+                        <a href="{% url 'payments:payment_gateway' booking_id=payment.booking.pk %}" class="btn btn-secondary btn-lg ms-2">Cancel</a>
+                    {% else %}
+                        <p class="text-muted">Click the button below to proceed with Razorpay secure payment</p>
+                        <button id="rzp-button" class="btn btn-primary btn-lg">
+                            <i class="fas fa-credit-card"></i> Pay Now with Razorpay
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Payment Details</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Payment ID:</strong> {{ payment.payment_id }}</p>
+                    <p><strong>Amount:</strong> ₹{{ payment.total_amount }}</p>
+                    <p><strong>Currency:</strong> {{ payment.currency }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Razorpay Script -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.getElementById('rzp-button').onclick = function(e) {
+    var options = {
+        "key": "{{ razorpay_key }}",
+        "amount": {{ payment.total_amount|floatformat:2 }},
+        "currency": "{{ payment.currency }}",
+        "order_id": "{{ razorpay_order_id }}",
+        "name": "CineBook",
+        "description": "Movie Booking Payment",
+        "handler": function(response){
+            // Submit form to verify payment
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "payments:razorpay_callback" %}';
+            form.innerHTML = '<input type="hidden" name="csrfmiddlewaretoken" value="' + getCookie('csrftoken') + '">' +
+                             '<input type="hidden" name="razorpay_payment_id" value="' + response.razorpay_payment_id + '">' +
+                             '<input type="hidden" name="razorpay_order_id" value="' + response.razorpay_order_id + '">' +
+                             '<input type="hidden" name="razorpay_signature" value="' + response.razorpay_signature + '">';
+            document.body.appendChild(form);
+            form.submit();
+        },
+        "prefill": {
+            "name": "{{ request.user.get_full_name|default:request.user.username }}",
+            "email": "{{ request.user.email }}"
+        },
+        "theme": {
+            "color": "#3399cc"
+        }
+    };
+    var rzp1 = new Razorpay(options);
+    rzp1.open();
+    e.preventDefault();
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

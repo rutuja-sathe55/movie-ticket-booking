@@ -1,0 +1,385 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout - Food Order - CineBook{% endblock %}
+
+{% block content %}
+<style>
+    .checkout-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 30px 0;
+        margin-bottom: 40px;
+        border-bottom: 3px solid #667eea;
+        color: white;
+    }
+
+    .checkout-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .checkout-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .checkout-card:hover {
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 15px 20px;
+    }
+
+    .card-header h5 {
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .order-item h6 {
+        font-weight: 600;
+        color: #2d2d2d;
+        margin: 0 0 8px 0;
+    }
+
+    .order-item-price {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        font-size: 0.95rem;
+    }
+
+    .summary-row strong {
+        font-weight: 700;
+        color: #2d2d2d;
+    }
+
+    .total-amount {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        padding: 20px;
+        border-radius: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px 0;
+    }
+
+    .total-amount h5 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .total-price {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #2d2d2d;
+        margin-bottom: 8px;
+    }
+
+    .form-select, .form-control {
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 10px 12px;
+        transition: all 0.3s ease;
+    }
+
+    .form-select:focus, .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .form-check-input {
+        width: 20px;
+        height: 20px;
+        margin-top: 3px;
+        border: 2px solid #667eea;
+        cursor: pointer;
+    }
+
+    .form-check-input:checked {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-color: transparent;
+    }
+
+    .form-check-label {
+        margin-left: 8px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .btn-proceed {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        font-weight: 700;
+        font-size: 1.05rem;
+        padding: 12px 20px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .btn-proceed:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    .btn-back {
+        border: 2px solid #667eea;
+        color: #667eea;
+        font-weight: 700;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .info-box {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-left: 4px solid #667eea;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 15px 0;
+    }
+
+    .info-box i {
+        color: #667eea;
+        margin-right: 10px;
+    }
+
+    .step-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .checkout-card {
+            margin-bottom: 20px;
+        }
+        .sticky-top {
+            position: static !important;
+        }
+    }
+</style>
+
+<div class="checkout-header">
+    <div class="container">
+        <h1><i class="fas fa-shopping-bag me-2"></i> Complete Your Order</h1>
+        <p class="mb-0 text-white-50">Review items and proceed to secure payment</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- Order Details -->
+            <div class="checkout-card mb-4">
+                <div class="card-header">
+                    <span class="step-badge me-2">1</span>
+                    <h5>Order Items</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% for item in order_items %}
+                        <div class="order-item">
+                            <div>
+                                <h6><i class="fas fa-utensils me-2" style="color: #667eea;"></i>{{ item.food_item.name }}</h6>
+                                <p class="text-muted mb-1" style="font-size: 0.9rem;">Qty: <span style="font-weight: 600;">{{ item.quantity }}</span> × ₹<span style="font-weight: 600;">{{ item.food_item.price }}</span></p>
+                                {% if item.special_instructions %}
+                                    <small class="text-muted d-block" style="font-style: italic;">{{ item.special_instructions }}</small>
+                                {% endif %}
+                                <p class="text-muted mb-0" style="font-size: 0.85rem;">
+                                    {% if item.description %}
+                                        {{ item.description|truncatewords:8 }}
+                                    {% else %}
+                                        <em>No description available</em>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="text-end">
+                                <div class="order-item-price">₹{{ item.total_price }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Delivery Information -->
+            <div class="checkout-card">
+                <div class="card-header">
+                    <span class="step-badge me-2">2</span>
+                    <h5>Pickup Details</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" id="delivery_form">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label for="theatre" class="form-label">
+                                <i class="fas fa-building me-2" style="color: #667eea;"></i>Select Theatre
+                            </label>
+                            <select id="theatre" name="theatre_id" class="form-select" required>
+                                <option value="">-- Choose your theatre --</option>
+                                {% for theatre in theatres %}
+                                    <option value="{{ theatre.pk }}" {% if selected_theatre.pk == theatre.pk %}selected{% endif %}>
+                                        <i class="fas fa-cinema"></i> {{ theatre.name }} - {{ theatre.city }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="special_instructions" class="form-label">
+                                <i class="fas fa-comment me-2" style="color: #667eea;"></i>Special Instructions
+                            </label>
+                            <textarea id="special_instructions" name="special_instructions" class="form-control" rows="3" placeholder="Any special requests or dietary restrictions?...">{{ special_instructions }}</textarea>
+                        </div>
+
+                        <div class="info-box">
+                            <i class="fas fa-clock fa-lg"></i>
+                            <strong>Estimated Pickup Time:</strong> 20-30 minutes after payment confirmation
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary Sidebar -->
+        <div class="col-lg-4">
+            <div class="checkout-card" style="position: sticky; top: 100px;">
+                <div class="card-header">
+                    <span class="step-badge me-2">3</span>
+                    <h5>Payment Summary</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="summary-row">
+                        <span><i class="fas fa-receipt me-2" style="color: #667eea;"></i>Subtotal:</span>
+                        <strong>₹{{ subtotal }}</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span><i class="fas fa-percent me-2" style="color: #764ba2;"></i>Tax (5%):</span>
+                        <strong>₹{{ tax }}</strong>
+                    </div>
+                    <div class="summary-row mb-3 pb-3 border-bottom">
+                        <span><i class="fas fa-tag me-2" style="color: #10b981;"></i>Discount:</span>
+                        <strong class="text-success">-₹{{ discount }}</strong>
+                    </div>
+
+                    <div class="total-amount">
+                        <div>
+                            <p class="mb-0 text-muted">Total Amount</p>
+                            <p class="mb-0" style="font-weight: 600; color: #2d2d2d;">to Pay</p>
+                        </div>
+                        <div class="total-price">₹{{ total }}</div>
+                    </div>
+
+                    <!-- Payment Method Selection -->
+                    <div class="mb-4 pt-3 border-top">
+                        <label class="form-label mb-3">
+                            <i class="fas fa-credit-card me-2" style="color: #667eea;"></i>Payment Method
+                        </label>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="payment_method" id="razorpay" value="razorpay" checked>
+                            <label class="form-check-label" for="razorpay">
+                                <i class="fas fa-credit-card me-1" style="color: #667eea;"></i>
+                                Razorpay (Cards, UPI, Wallet)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="wallet" value="wallet">
+                            <label class="form-check-label" for="wallet">
+                                <i class="fas fa-wallet me-1" style="color: #764ba2;"></i>
+                                CineBook Wallet
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Order Confirmation Checkbox -->
+                    <div class="form-check mb-4 pt-3 border-top">
+                        <input class="form-check-input" type="checkbox" id="confirm" name="confirm_order" value="yes" required>
+                        <label class="form-check-label" for="confirm">
+                            I confirm this order and agree to the <a href="#" class="text-decoration-none" style="color: #667eea;">terms & conditions</a>
+                        </label>
+                    </div>
+
+                    <!-- Payment Button -->
+                    <button type="button" onclick="submitCheckout()" class="btn btn-proceed mb-2">
+                        <i class="fas fa-lock me-2"></i> Proceed to Payment (₹{{ total }})
+                    </button>
+
+                    <button onclick="history.back()" class="btn btn-back w-100">
+                        <i class="fas fa-arrow-left me-2"></i> Back to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden form for payment submission -->
+    <form method="POST" id="checkout_form" class="d-none">
+        {% csrf_token %}
+        <input type="hidden" name="theatre_id" id="hidden_theatre_id">
+        <input type="hidden" name="special_instructions" id="hidden_instructions">
+    </form>
+</div>
+
+<script>
+    function submitCheckout() {
+        // Validate form
+        if (!document.getElementById('confirm').checked) {
+            alert('✓ Please confirm the order to proceed');
+            return;
+        }
+
+        const theatreId = document.getElementById('theatre').value;
+        if (!theatreId) {
+            alert('✓ Please select a theatre to proceed');
+            return;
+        }
+
+        // Update hidden fields
+        document.getElementById('hidden_theatre_id').value = theatreId;
+        document.getElementById('hidden_instructions').value = document.getElementById('special_instructions').value;
+
+        // Submit checkout form
+        document.getElementById('checkout_form').submit();
+    }
+</script>
+{% endblock %}

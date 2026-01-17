@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_attrs %}data-page="add-movie"{% endblock %}
+
+{% block title %}Add Movie - CineBook{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">+ Add Movie</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                        {% endif %}
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Title</label>
+                                {{ form.title }}
+                                {{ form.title.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Release Date</label>
+                                {{ form.release_date }}
+                                {{ form.release_date.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Poster</label>
+                                {{ form.poster }}
+                                {{ form.poster.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Banner</label>
+                                {{ form.banner }}
+                                {{ form.banner.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Duration (minutes)</label>
+                                {{ form.duration_minutes }}
+                                {{ form.duration_minutes.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Language</label>
+                                {{ form.language }}
+                                {{ form.language.errors }}
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label">Description</label>
+                                {{ form.description }}
+                                {{ form.description.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Genres</label>
+                                {{ form.genres }}
+                                {{ form.genres.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Certification</label>
+                                {{ form.certification }}
+                                {{ form.certification.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Director</label>
+                                {{ form.director }}
+                                {{ form.director.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Rating</label>
+                                {{ form.rating }}
+                                {{ form.rating.errors }}
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label">Cast (comma separated)</label>
+                                {{ form.cast }}
+                                {{ form.cast.errors }}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Status</label>
+                                {{ form.status }}
+                                {{ form.status.errors }}
+                            </div>
+
+                            <div class="col-md-6 d-flex align-items-center">
+                                <div class="form-check mt-3">
+                                    {{ form.is_featured }} <label class="form-check-label ms-2">Featured</label>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <button type="submit" class="btn btn-success">Save Movie</button>
+                                <a href="{% url 'movies:movie_list' %}" class="btn btn-secondary ms-2">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

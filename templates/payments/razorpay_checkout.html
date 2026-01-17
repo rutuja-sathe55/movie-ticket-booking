@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Razorpay Checkout - CineBook{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Secure Payment Checkout</h4>
+                </div>
+                <div class="card-body">
+                    {% if test_mode %}
+                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <strong>Test Mode:</strong> This is a test payment. No real charge will be made.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <h6>Payment Summary</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td>Order:</td>
+                                <td>
+                                    {% if payment.booking %}
+                                        <strong>{{ payment.booking.booking_id }}</strong>
+                                    {% else %}
+                                        {% if food_order %}
+                                            <strong>{{ food_order.order_id }}</strong>
+                                        {% else %}
+                                            <strong>{{ payment.payment_id }}</strong>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Amount:</td>
+                                <td><strong>₹{{ payment.total_amount }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Order ID:</td>
+                                <td><code>{{ razorpay_order_id }}</code></td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <form id="razorpayForm" method="POST" action="{% url 'payments:razorpay_callback' %}">
+                        {% csrf_token %}
+                        
+                        <input type="hidden" name="payment_id" value="{{ payment.id }}">
+                        <input type="hidden" name="razorpay_order_id" value="{{ razorpay_order_id }}">
+                        <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+                        <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+                        
+                        <button type="button" class="btn btn-success w-100" id="paymentBtn">
+                            Pay ₹{{ payment.total_amount }} with Razorpay
+                        </button>
+                        {% if test_mode %}
+                        <div class="mt-3">
+                            <a href="{% url 'payments:simulate_payment' payment.id %}" class="btn btn-outline-success w-100">Simulate Payment Success (DEBUG)</a>
+                        </div>
+                        {% endif %}
+                    </form>
+
+                    <div class="mt-3 text-center">
+                        {% if payment.booking %}
+                            <a href="{% url 'payments:payment_gateway' booking_id=payment.booking.id %}" class="text-muted">← Back to Payment Options</a>
+                        {% else %}
+                            {% if food_order %}
+                                <a href="{% url 'food:order_detail' pk=food_order.pk %}" class="text-muted">← Back to Order</a>
+                            {% else %}
+                                <a href="{% url 'food:order_list' %}" class="text-muted">← Back to Orders</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    document.getElementById('paymentBtn').onclick = function(e) {
+        {% if test_mode %}
+        // In test mode, POST to callback endpoint and redirect main window on success
+        (function(){
+            var formData = new FormData();
+            formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+            formData.append('payment_id', '{{ payment.id }}');
+            formData.append('razorpay_order_id', '{{ razorpay_order_id }}');
+            formData.append('razorpay_payment_id', 'test_payment_' + Date.now());
+            formData.append('razorpay_signature', 'test_signature');
+
+            fetch('{% url 'payments:razorpay_callback' %}', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(function(resp){ return resp.json(); })
+            .then(function(data){ if(data.redirect_url){ if(window.opener){ window.opener.location = data.redirect_url; window.close(); } else { window.location = data.redirect_url; } } else { alert('Payment failed: ' + (data.message || 'Unknown error')); } })
+            .catch(function(err){ alert('Payment request failed: ' + err); console.error(err); });
+        })();
+        {% else %}
+        var options = {
+            "key": "{{ razorpay_key }}",
+            "amount": {{ payment.total_amount|floatformat:0 }} * 100,
+            "currency": "{{ payment.currency }}",
+            "order_id": "{{ razorpay_order_id }}",
+            "name": "CineBook",
+            "description": "{% if payment.booking %}Movie Ticket Booking - {{ payment.booking.booking_id }}{% elif food_order %}Food Order - {{ food_order.order_id }}{% else %}Order - {{ payment.payment_id }}{% endif %}",
+            "image": "{% static 'images/logo.png' %}",
+            "handler": function (response){
+                // Post to server callback endpoint and redirect main window on success
+                var formData = new FormData();
+                formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+                formData.append('payment_id', '{{ payment.id }}');
+                formData.append('razorpay_order_id', '{{ razorpay_order_id }}');
+                formData.append('razorpay_payment_id', response.razorpay_payment_id);
+                formData.append('razorpay_signature', response.razorpay_signature);
+
+                fetch('{% url 'payments:razorpay_callback' %}', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                })
+                .then(function(resp){ return resp.json(); })
+                .then(function(data){ if(data.redirect_url){ if(window.opener){ window.opener.location = data.redirect_url; window.close(); } else { window.location = data.redirect_url; } } else { alert('Payment verification failed: ' + (data.message || 'Unknown error')); } })
+                .catch(function(err){ alert('Payment request failed: ' + err); console.error(err); });
+            },
+            {% if razorpay_method %}
+            "method": "{{ razorpay_method }}",
+            {% endif %}
+            "prefill": {
+                "name": "{{ user.first_name }} {{ user.last_name }}",
+                "email": "{{ user.email }}",
+                "contact": "{{ user.userprofile.phone|default:'' }}"
+            },
+            "notes": {
+                {% if payment.booking %}
+                "booking_id": "{{ payment.booking.booking_id }}"
+                {% elif food_order %}
+                "food_order_id": "{{ food_order.pk }}"
+                {% else %}
+                "payment_id": "{{ payment.payment_id }}"
+                {% endif %}
+            },
+            "theme": {
+                "color": "#007bff"
+            },
+            "modal": {
+                "ondismiss": function() {
+                    alert('Payment cancelled. Please try again.');
+                }
+            }
+        };
+        var rzp1 = new Razorpay(options);
+        rzp1.open();
+        {% endif %}
+    };
+</script>
+
+{% endblock %}

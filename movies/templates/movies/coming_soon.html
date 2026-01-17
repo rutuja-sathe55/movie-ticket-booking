@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Coming Soon Movies - CineBook{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">
+                <i class="fas fa-calendar-alt"></i> Coming Soon
+            </h1>
+            <p class="text-muted">Exciting movies coming to theatres near you!</p>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="query" class="form-control" placeholder="Search movies..." value="{{ request.GET.query }}">
+                </div>
+                <div class="col-md-4">
+                    <select name="language" class="form-select">
+                        <option value="">All Languages</option>
+                        <option value="hindi" {% if request.GET.language == 'hindi' %}selected{% endif %}>Hindi</option>
+                        <option value="english" {% if request.GET.language == 'english' %}selected{% endif %}>English</option>
+                        <option value="marathi" {% if request.GET.language == 'marathi' %}selected{% endif %}>Marathi</option>
+                      
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if movies %}
+        <div class="row">
+            {% for movie in movies %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm hover-card">
+                        {% if movie.poster %}
+                            <img src="{{ movie.poster.url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 300px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 300px;">
+                                <i class="fas fa-image fa-3x"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ movie.title }}</h5>
+                            <p class="card-text text-muted">{{ movie.description|truncatewords:15 }}</p>
+                            <div class="mb-3">
+                                <span class="badge bg-info">{{ movie.get_language_display }}</span>
+                                {% for genre in movie.genres.all %}
+                                    <span class="badge bg-secondary">{{ genre.name }}</span>
+                                {% endfor %}
+                            </div>
+                            <p class="mb-2">
+                                <strong>Release Date:</strong><br>
+                                {{ movie.release_date|date:"d M Y" }}
+                            </p>
+                            <p class="mb-2">
+                                <strong>IMDb Rating:</strong><br>
+                                <i class="fas fa-star text-warning"></i> {{ movie.rating }}/10
+                            </p>
+                        </div>
+                        <div class="card-footer bg-white border-top">
+                            <a href="{% url 'movies:movie_detail' movie.pk %}" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-info-circle"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            <i class="fas fa-inbox"></i>
+            <p>No upcoming movies matching your criteria. Check back soon!</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+    }
+</style>
+{% endblock %}

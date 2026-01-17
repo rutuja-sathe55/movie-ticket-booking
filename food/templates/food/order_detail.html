@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order #{{ food_order.order_id }} - CineBook{% endblock %}
+
+{% block content %}
+<style>
+    .order-page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 40px 0;
+        margin-bottom: 40px;
+        color: white;
+    }
+
+    .order-page-header h1 {
+        font-weight: 700;
+        font-size: 2.5rem;
+        margin-bottom: 5px;
+    }
+
+    .order-page-header .order-id {
+        font-size: 0.9rem;
+        opacity: 0.95;
+    }
+
+    .status-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        margin-bottom: 30px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .status-card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+    }
+
+    .card-header-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        font-weight: 700;
+    }
+
+    .status-badge {
+        padding: 10px 20px !important;
+        font-size: 1rem !important;
+        border-radius: 8px;
+        font-weight: 700;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    .status-badge.bg-warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%) !important;
+    }
+
+    .status-badge.bg-info {
+        background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+    }
+
+    .status-badge.bg-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    }
+
+    .order-item {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        border-left: 4px solid #667eea;
+        transition: all 0.2s ease;
+    }
+
+    .order-item:hover {
+        background: #f0f1f5;
+        transform: translateX(4px);
+    }
+
+    .order-item h6 {
+        color: #2d2d2d;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .order-item .item-price {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #667eea;
+    }
+
+    .summary-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        sticky-top: 100px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        font-size: 0.95rem;
+    }
+
+    .summary-row:not(:last-child) {
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .summary-total {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+        text-align: center;
+    }
+
+    .summary-total h5 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .theatre-info-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+        border: none;
+    }
+
+    .theatre-info-card h6 {
+        font-weight: 700;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    .theatre-info-card p {
+        margin: 5px 0;
+        font-weight: 500;
+    }
+
+    .booking-info-card {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 15px;
+        border: none;
+    }
+
+    .booking-info-card h6 {
+        font-weight: 700;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    .action-buttons {
+        display: grid;
+        gap: 12px;
+        margin-top: 25px;
+    }
+
+    .btn-action {
+        padding: 12px 20px;
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-action.btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-action.btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-action.btn-outline-secondary {
+        border: 2px solid #e5e7eb;
+        color: #2d2d2d;
+        background: white;
+    }
+
+    .btn-action.btn-outline-secondary:hover {
+        border-color: #667eea;
+        color: #667eea;
+        background: rgba(102, 126, 234, 0.05);
+    }
+
+    .btn-action.btn-outline-danger {
+        border: 2px solid #dc3545;
+        color: #dc3545;
+        background: white;
+    }
+
+    .btn-action.btn-outline-danger:hover {
+        background: #dc3545;
+        color: white;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+
+    .special-instructions-card {
+        background: linear-gradient(135deg, #fef3c7 0%, #fef08a 100%);
+        border-left: 4px solid #f59e0b;
+        border-radius: 8px;
+        padding: 20px;
+    }
+
+    .special-instructions-card h5 {
+        color: #92400e;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .special-instructions-card p {
+        color: #78350f;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .order-page-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .summary-section {
+            margin-top: 30px;
+            position: static !important;
+        }
+
+        .action-buttons {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<!-- Page Header -->
+<div class="order-page-header">
+    <div class="container">
+        <h1>
+            <i class="fas fa-receipt me-3"></i>Order Details
+        </h1>
+        <div class="order-id">
+            <i class="fas fa-hashtag"></i> Order #{{ food_order.order_id }}
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row gap-4">
+        <div class="col-lg-8">
+            <!-- Order Status Section -->
+            <div class="status-card">
+                <div class="card-header-custom">
+                    <i class="fas fa-info-circle me-2"></i>Order Status
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div>
+                            <p class="text-muted mb-2" style="font-size: 0.9rem;">
+                                <i class="fas fa-check-circle me-2"></i>Current Status
+                            </p>
+                            <span class="status-badge 
+                                {% if food_order.status == 'pending' %}bg-warning
+                                {% elif food_order.status == 'preparing' %}bg-info
+                                {% elif food_order.status == 'ready' %}bg-success
+                                {% elif food_order.status == 'delivered' %}bg-success
+                                {% else %}bg-danger
+                                {% endif %}">
+                                <i class="fas fa-circle me-2" style="font-size: 0.6rem;"></i>{{ food_order.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="text-end">
+                            <p class="text-muted mb-2" style="font-size: 0.9rem;">
+                                <i class="fas fa-calendar me-2"></i>Ordered On
+                            </p>
+                            <span style="font-weight: 600; color: #2d2d2d;">{{ food_order.created_at|date:"M d, Y" }}</span>
+                            <div style="font-size: 0.85rem; color: #999;">{{ food_order.created_at|date:"H:i A" }}</div>
+                        </div>
+                    </div>
+                    {% if food_order.estimated_ready_time %}
+                        <div style="background: rgba(102, 126, 234, 0.05); border-left: 4px solid #667eea; padding: 15px; border-radius: 6px;">
+                            <p class="text-muted mb-2" style="font-size: 0.85rem; text-transform: uppercase;">
+                                <i class="fas fa-hourglass-end me-2"></i>Estimated Ready Time
+                            </p>
+                            <h6 class="mb-0" style="color: #667eea; font-weight: 700;">{{ food_order.estimated_ready_time|date:"M d, Y H:i" }}</h6>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Order Items Section -->
+            <div class="status-card">
+                <div class="card-header-custom">
+                    <i class="fas fa-shopping-bag me-2"></i>Order Items
+                </div>
+                <div class="card-body p-4">
+                    {% for item in items %}
+                        <div class="order-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div style="flex: 1;">
+                                    <h6 class="mb-2">{{ item.food_item.name }}</h6>
+                                    <div class="text-muted" style="font-size: 0.9rem;">
+                                        <div class="mb-2">
+                                            <i class="fas fa-boxes me-2"></i>{{ item.quantity }} × ₹{{ item.unit_price }}
+                                        </div>
+                                        {% if item.special_instructions %}
+                                            <div style="background: rgba(102, 126, 234, 0.1); padding: 8px 12px; border-radius: 6px; margin-top: 8px;">
+                                                <i class="fas fa-note-sticky me-2" style="color: #667eea;"></i>
+                                                <span style="color: #667eea; font-weight: 500;">{{ item.special_instructions }}</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="text-end ms-3">
+                                    <div class="item-price">₹{{ item.total_price }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Special Instructions -->
+            {% if food_order.special_instructions %}
+                <div class="special-instructions-card">
+                    <h5>
+                        <i class="fas fa-comment-dots me-2"></i>Special Instructions
+                    </h5>
+                    <p>{{ food_order.special_instructions }}</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar Summary -->
+        <div class="col-lg-4">
+            <div class="summary-section">
+                <h5 style="font-weight: 700; margin-bottom: 20px; color: #2d2d2d;">
+                    <i class="fas fa-calculator me-2" style="color: #667eea;"></i>Order Summary
+                </h5>
+
+                <!-- Summary Rows -->
+                <div class="summary-row">
+                    <span style="color: #666;">Subtotal</span>
+                    <strong style="color: #2d2d2d;">₹{{ food_order.total_amount }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span style="color: #666;">Tax</span>
+                    <strong style="color: #2d2d2d;">₹{{ food_order.tax }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span style="color: #666;">Discount</span>
+                    <strong style="color: #10b981;">-₹{{ food_order.discount }}</strong>
+                </div>
+
+                <!-- Total -->
+                <div class="summary-total">
+                    <small style="opacity: 0.9;">Final Amount</small>
+                    <h5>₹{{ food_order.final_amount }}</h5>
+                </div>
+
+                <!-- Theatre Info -->
+                <div class="theatre-info-card">
+                    <h6>
+                        <i class="fas fa-building me-2"></i>Pickup Theatre
+                    </h6>
+                    <p>{{ food_order.theatre.name }}</p>
+                    <small style="opacity: 0.85;">{{ food_order.theatre.city }}</small>
+                </div>
+
+                <!-- Booking Info -->
+                {% if food_order.booking %}
+                    <div class="booking-info-card">
+                        <h6>
+                            <i class="fas fa-ticket-alt me-2"></i>Linked Booking
+                        </h6>
+                        <p>Booking #{{ food_order.booking.booking_id }}</p>
+                        <a href="{% url 'bookings:booking_detail' food_order.booking.pk %}" class="btn btn-sm btn-light mt-3" style="font-weight: 600;">
+                            <i class="fas fa-arrow-right me-1"></i>View Booking
+                        </a>
+                    </div>
+                {% endif %}
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <a href="{% url 'food:order_list' %}" class="btn-action btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i>Back to Orders
+                    </a>
+                    <a href="{% url 'food:menu' %}" class="btn-action btn-primary">
+                        <i class="fas fa-utensils"></i>Order More
+                    </a>
+                    {% if food_order.status == 'pending' or food_order.status == 'preparing' %}
+                    <a href="{% url 'food:cancel_order' pk=food_order.pk %}" class="btn-action btn-outline-danger">
+                        <i class="fas fa-times"></i>Cancel Order
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_attrs %}data-page="ticket-preview"{% endblock %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .ticket-card {
+    max-width: 600px;
+    margin: 40px auto;
+    border: 3px solid #0d6efd;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  }
+  .ticket-header {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 12px 12px 0 0;
+    text-align: center;
+  }
+  .ticket-header h2 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+  }
+  .ticket-header p {
+    margin: 8px 0 0 0;
+    font-size: 14px;
+    opacity: 0.95;
+  }
+  .ticket-body {
+    padding: 30px;
+  }
+  .ticket-detail {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #e9ecef;
+  }
+  .ticket-detail:last-child {
+    border-bottom: none;
+  }
+  .detail-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+  }
+  .detail-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0d6efd;
+    text-align: right;
+    word-break: break-word;
+    max-width: 50%;
+  }
+  .ticket-footer {
+    padding: 20px 30px;
+    background: #f8f9fa;
+    border-radius: 0 0 12px 12px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .btn-download {
+    flex: 1;
+    padding: 12px 24px;
+    background: #0d6efd;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  .btn-download:hover {
+    background: #0a58ca;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(13, 110, 253, 0.3);
+  }
+  .btn-back {
+    flex: 1;
+    padding: 12px 24px;
+    background: #6c757d;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+  .btn-back:hover {
+    background: #5a6268;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="ticket-card">
+    <div class="ticket-header">
+      <h2>{{ ticket.booking.show.movie.title }}</h2>
+      <p>Your Ticket is Ready!</p>
+    </div>
+
+    <div class="ticket-body">
+      <div class="ticket-detail">
+        <span class="detail-label">Booking ID</span>
+        <span class="detail-value">{{ ticket.booking.booking_id }}</span>
+      </div>
+
+      <div class="ticket-detail">
+        <span class="detail-label">Ticket ID</span>
+        <span class="detail-value">{{ ticket.ticket_id }}</span>
+      </div>
+
+      <div class="ticket-detail">
+        <span class="detail-label">Movie</span>
+        <span class="detail-value">{{ ticket.show.movie.title }}</span>
+      </div>
+
+      <div class="ticket-detail">
+        <span class="detail-label">Show</span>
+        <span class="detail-value">{{ show_dt }}</span>
+      </div>
+
+      <div class="ticket-detail">
+        <span class="detail-label">Seat</span>
+        <span class="detail-value">{{ seat_label }}</span>
+      </div>
+
+      <div class="ticket-detail">
+        <span class="detail-label">Price</span>
+        <span class="detail-value">₹{{ ticket.final_price }}</span>
+      </div>
+    </div>
+
+    <div class="ticket-footer">
+      <a href="{% url 'bookings:download_ticket' ticket.ticket_id %}" class="btn-download">
+        <i class="fas fa-download"></i> Download PDF
+      </a>
+      <a href="{% url 'bookings:booking_detail' ticket.booking.pk %}" class="btn-back">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

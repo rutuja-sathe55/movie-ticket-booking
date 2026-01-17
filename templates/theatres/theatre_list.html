@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_attrs %}data-page="theatre-list"{% endblock %}
+
+{% block title %}Theatres - CineBook{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div style="background: linear-gradient(135deg, #00C2FF 0%, #7C3AED 100%); color: white; padding: 60px 0 40px;">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-2"><i class="fas fa-building me-3"></i>Select Theatre</h1>
+        <p class="lead mb-0" style="opacity: 0.95;">Find and book your favorite theatre for an amazing movie experience</p>
+    </div>
+</div>
+
+<!-- Search Section -->
+<section class="py-4" style="background-color: #f5f7fa; border-bottom: 2px solid #e0e0e0;">
+    <div class="container">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-8 col-sm-6">
+                <label for="city" class="form-label fw-bold">
+                    <i class="fas fa-map-marker-alt me-2" style="color: var(--accent-color);"></i>Search by City
+                </label>
+                <input type="text" id="city" name="city" class="form-control form-control-lg" 
+                       placeholder="Enter city name (e.g., Mumbai, Delhi, Bangalore)..." value="{{ selected_city }}">
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">
+                    <i class="fas fa-search me-2"></i>Search Theatres
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Theatres Grid -->
+<section class="py-5">
+    <div class="container">
+        {% if theatres %}
+            <div class="row g-4">
+                {% for theatre in theatres %}
+                <div class="col-lg-6 col-md-12">
+                    <div class="card border-0 shadow-lg h-100 overflow-hidden">
+                        <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px;">
+                            <h4 class="fw-bold mb-2">{{ theatre.name }}</h4>
+                            <p style="opacity: 0.95; margin-bottom: 0;">
+                                <i class="fas fa-map-marker-alt me-2"></i>{{ theatre.city }}
+                            </p>
+                        </div>
+                        
+                        <div class="card-body">
+                            <!-- Address -->
+                            <div class="mb-3">
+                                <small style="color: var(--text-light);">
+                                    <i class="fas fa-home me-2" style="color: var(--accent-color);"></i>Address
+                                </small>
+                                <p class="fw-bold mb-0">{{ theatre.address }}</p>
+                            </div>
+                            
+                            <!-- Contact Info -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <small style="color: var(--text-light);">
+                                        <i class="fas fa-phone me-2" style="color: var(--accent-color);"></i>Phone
+                                    </small>
+                                    <p class="fw-bold mb-0">{{ theatre.phone_number }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <small style="color: var(--text-light);">
+                                        <i class="fas fa-envelope me-2" style="color: var(--accent-color);"></i>Email
+                                    </small>
+                                    <p class="fw-bold mb-0" style="font-size: 0.9rem;">{{ theatre.email }}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Technology Badges -->
+                            {% if theatre.has_4k or theatre.has_imax or theatre.has_dolby %}
+                                <div class="mb-4">
+                                    <small style="color: var(--text-light); display: block; margin-bottom: 8px;">
+                                        <i class="fas fa-star me-2" style="color: var(--secondary-color);"></i>Premium Features
+                                    </small>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% if theatre.has_4k %}
+                                            <span class="badge bg-info fw-bold" style="padding: 8px 12px;">
+                                                <i class="fas fa-video me-1"></i>4K
+                                            </span>
+                                        {% endif %}
+                                        {% if theatre.has_imax %}
+                                            <span class="badge bg-danger fw-bold" style="padding: 8px 12px;">
+                                                <i class="fas fa-expand me-1"></i>IMAX
+                                            </span>
+                                        {% endif %}
+                                        {% if theatre.has_dolby %}
+                                            <span class="badge bg-success fw-bold" style="padding: 8px 12px;">
+                                                <i class="fas fa-volume-up me-1"></i>Dolby
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="card-footer bg-white border-top-0">
+                            <a href="{% url 'theatres:theatre_detail' theatre.pk %}" class="btn btn-primary w-100 btn-lg fw-bold">
+                                <i class="fas fa-calendar-alt me-2"></i>View Shows & Book
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-5" style="background: white; border-radius: 15px; padding: 60px 40px;">
+                <i class="fas fa-search fa-5x mb-4" style="color: #ddd;"></i>
+                <h3 class="fw-bold mb-3">No Theatres Found</h3>
+                <p style="color: var(--text-light); font-size: 1.05rem;">
+                    We couldn't find any theatres in the selected city. 
+                    <br>Please try searching for a different city or check back soon!
+                </p>
+                <div class="mt-4">
+                    <a href="{% url 'theatres:theatre_list' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-redo me-2"></i>Clear Search
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Info Section -->
+<section class="py-5" style="background-color: #f5f7fa;">
+    <div class="container">
+        <h2 class="fw-bold mb-4 text-center">Why Choose Our Theatres?</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div style="font-size: 3rem; color: var(--accent-color); margin-bottom: 15px;">
+                        <i class="fas fa-chair"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Premium Seating</h5>
+                    <p style="color: var(--text-light);">Comfortable reclining seats with excellent legroom</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div style="font-size: 3rem; color: var(--secondary-color); margin-bottom: 15px;">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Food & Beverages</h5>
+                    <p style="color: var(--text-light);">Delicious snacks and drinks available at all theatres</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div style="font-size: 3rem; color: #28a745; margin-bottom: 15px;">
+                        <i class="fas fa-mask"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Safety First</h5>
+                    <p style="color: var(--text-light);">Hygienic facilities and strict COVID-19 protocols</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    #city {
+        border-radius: 10px !important;
+    }
+</style>
+{% endblock %}

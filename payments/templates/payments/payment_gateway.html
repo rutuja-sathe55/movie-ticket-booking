@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment - CineBook{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4"><i class="fas fa-credit-card"></i> Payment</h1>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Select Payment Method</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Payment Method</strong></label>
+                            <div class="payment-options">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="razorpay" value="razorpay" required>
+                                    <label class="form-check-label" for="razorpay">
+                                        <strong>Razorpay</strong> - Secure Online Payment
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="card" value="card">
+                                    <label class="form-check-label" for="card">
+                                        <strong>Credit/Debit Card</strong>
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="netbanking" value="netbanking">
+                                    <label class="form-check-label" for="netbanking">
+                                        <strong>Net Banking</strong>
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="wallet" value="wallet">
+                                    <label class="form-check-label" for="wallet">
+                                        <strong>Digital Wallet</strong>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check"></i> Proceed to Checkout
+                        </button>
+                        <a href="{% url 'bookings:booking_detail' booking.pk %}" class="btn btn-secondary btn-lg">
+                            Cancel
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Booking Summary</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Booking ID:</strong> {{ booking.booking_id }}</p>
+                    <p><strong>Movie:</strong> {{ booking.show.movie.title }}</p>
+                    <p><strong>Theatre:</strong> {{ booking.show.screen.theatre.name }}</p>
+                    <p><strong>Date:</strong> {{ booking.show.show_date|date:"d M Y" }}</p>
+                    <p><strong>Time:</strong> {{ booking.show.show_time|time:"H:i" }}</p>
+                    <hr>
+                    <p><strong>Seats:</strong> {{ booking.total_amount }}</p>
+                    <p><strong>Discount:</strong> -₹{{ booking.discount_amount }}</p>
+                    <p class="fs-5"><strong>Total Amount:</strong> ₹{{ booking.final_amount }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

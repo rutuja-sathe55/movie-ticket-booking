@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Food Menu - CineBook{% endblock %}
+
+{% block content %}
+<style>
+    .food-header {
+        background: linear-gradient(135deg, #1b40e4ff 0%, #7727c7ff 100%);
+        padding: 40px 0;
+        margin-bottom: 40px;
+        border-bottom: 3px solid #667eea;
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.2);
+    }
+    
+    .food-header h1 {
+        color: white;
+        font-weight: 700;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+    
+    .food-header p {
+        color: rgba(255,255,255,0.9);
+        font-size: 1.2rem;
+    }
+
+    .category-btn {
+        border: 2px solid #667eea;
+        color: #667eea;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        border-radius: 25px;
+        padding: 8px 16px;
+    }
+    
+    .category-btn:hover,
+    .category-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .food-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        background: white;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .food-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.25);
+    }
+
+    .food-image-wrapper {
+        position: relative;
+        overflow: hidden;
+        height: 220px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+
+    .food-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+
+    .food-card:hover .food-image-wrapper img {
+        transform: scale(1.1);
+    }
+
+    .badge-container {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .price-tag {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 12px 0;
+    }
+
+    .action-buttons {
+        gap: 8px;
+    }
+
+    .btn-details {
+        color: #667eea;
+        border: 2px solid #667eea;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .btn-details:hover {
+        background: #667eea;
+        color: white;
+        transform: translateX(2px);
+    }
+
+    .btn-add {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        font-weight: 600;
+        flex-grow: 1;
+    }
+
+    .btn-add:hover {
+        transform: translateX(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    .cart-link {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 25px;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+    }
+
+    .cart-link:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    .empty-state {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border: 2px dashed #667eea;
+        border-radius: 15px;
+        padding: 60px 30px;
+        text-align: center;
+    }
+
+    .empty-state i {
+        color: #667eea;
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="food-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-popcorn"></i> Food & Beverages</h1>
+                <p>Order delicious snacks and beverages for a complete cinema experience</p>
+            </div>
+            <div>
+                <a href="{% url 'food:view_cart' %}" class="cart-link" style="text-decoration: none; display: inline-block;">
+                    <i class="fas fa-shopping-cart me-2"></i> View Cart
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <!-- Category Filter -->
+    <div class="mb-5">
+        <h5 class="fw-bold mb-3" style="color: #2d2d2d;">
+            <i class="fas fa-filter" style="color: #667eea;"></i> Filter by Category
+        </h5>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'food:menu' %}" class="category-btn {% if not request.GET.category %}active{% endif %}">
+                <i class="fas fa-th"></i> All Items
+            </a>
+            {% for category in categories %}
+                <a href="?category={{ category.id }}" class="category-btn {% if request.GET.category|stringformat:'s' == category.id|stringformat:'s' %}active{% endif %}">
+                    {% if category.icon %}
+                        <img src="{{ category.icon.url }}" alt="{{ category.name }}" style="height: 16px; margin-right: 6px;">
+                    {% else %}
+                        <i class="fas fa-tag"></i>
+                    {% endif %}
+                    {{ category.name }}
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Food Items Grid -->
+    <div class="row g-4">
+        {% if food_items %}
+            {% for item in food_items %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="food-card">
+                        <div class="food-image-wrapper">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                            {% else %}
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <i class="fas fa-utensils fa-3x text-white"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Badges -->
+                            <div class="badge-container">
+                                {% if item.is_vegetarian %}
+                                    <span class="badge bg-success" style="font-size: 0.8rem; padding: 6px 10px;">
+                                        <i class="fas fa-leaf me-1"></i> Vegetarian
+                                    </span>
+                                {% endif %}
+                                {% if item.available_quantity > 0 %}
+                                    <span class="badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); font-size: 0.8rem; padding: 6px 10px;">
+                                        <i class="fas fa-check-circle me-1"></i> Available
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger" style="font-size: 0.8rem; padding: 6px 10px;">
+                                        <i class="fas fa-times-circle me-1"></i> Out of Stock
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="card-body d-flex flex-column flex-grow-1">
+                            <div class="mb-2">
+                                <h5 class="card-title fw-bold" style="color: #2d2d2d; margin-bottom: 8px;">{{ item.name }}</h5>
+                                <span class="badge" style="background: rgba(102, 126, 234, 0.1); color: #667eea; font-weight: 600;">{{ item.category.name }}</span>
+                            </div>
+                            
+                            <p class="card-text text-muted flex-grow-1" style="font-size: 0.95rem;">
+                                {% if item.description %}
+                                    {{ item.description|truncatewords:15 }}
+                                {% else %}
+                                    <em>No description available</em>
+                                {% endif %}
+                            </p>
+                            
+                            <!-- Price and Allergens -->
+                            <div class="mb-3">
+                                <div class="price-tag">₹{{ item.price }}</div>
+                                {% if item.contains_nuts or item.contains_dairy or item.contains_gluten %}
+                                    <small class="d-block" style="color: #f59e0b;">
+                                        <i class="fas fa-triangle-exclamation me-1"></i>
+                                        {% if item.contains_nuts %}<span>Nuts</span>{% endif %}
+                                        {% if item.contains_dairy %}<span>Dairy</span>{% endif %}
+                                        {% if item.contains_gluten %}<span>Gluten</span>{% endif %}
+                                    </small>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="action-buttons d-flex gap-2">
+                                <a href="{% url 'food:food_detail' item.pk %}" class="btn btn-sm btn-details flex-grow-1">
+                                    <i class="fas fa-info-circle me-1"></i> Details
+                                </a>
+                                {% if item.available_quantity > 0 and user.is_authenticated %}
+                                    <form method="POST" action="{% url 'food:add_to_cart' item.pk %}" style="flex-grow: 1;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn btn-sm btn-add">
+                                            <i class="fas fa-shopping-cart me-1"></i> Add
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <button class="btn btn-sm" style="background-color: #e5e7eb; color: #999; cursor: not-allowed; border-radius: 8px; font-weight: 600;" disabled>
+                                        <i class="fas fa-lock me-1"></i> {% if not user.is_authenticated %}Login{% else %}N/A{% endif %}
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="empty-state">
+                    <i class="fas fa-inbox fa-4x mb-3 d-block"></i>
+                    <h4 style="color: #667eea; font-weight: 700;">No food items available</h4>
+                    <p class="text-muted mb-4">Please check back later for our delicious menu items.</p>
+                    <a href="{% url 'home' %}" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600;">
+                        <i class="fas fa-arrow-left me-2"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

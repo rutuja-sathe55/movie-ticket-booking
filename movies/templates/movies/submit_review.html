@@ -1,0 +1,419 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if is_update %}Update Review{% else %}Write a Review{% endif %} - CineBook{% endblock %}
+
+{% block content %}
+<style>
+    .review-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 40px 0;
+        margin-bottom: 40px;
+        color: white;
+    }
+
+    .review-header h1 {
+        font-weight: 700;
+        font-size: 2rem;
+        margin-bottom: 5px;
+    }
+
+    .movie-info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        display: flex;
+        gap: 20px;
+    }
+
+    .movie-poster-small {
+        width: 100px;
+        height: 150px;
+        border-radius: 8px;
+        overflow: hidden;
+        object-fit: cover;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .movie-details-text h4 {
+        margin: 0 0 8px 0;
+        color: #2d2d2d;
+        font-weight: 700;
+    }
+
+    .movie-details-text p {
+        margin: 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .review-form-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        font-weight: 700;
+        color: #2d2d2d;
+        margin-bottom: 15px;
+        display: block;
+        font-size: 1.1rem;
+    }
+
+    .rating-input {
+        display: flex;
+        gap: 12px;
+        align-items: stretch;
+        flex-wrap: nowrap;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        padding: 20px;
+        border-radius: 12px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+
+    .rating-input:hover {
+        border-color: #f59e0b;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+    }
+
+    .rating-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        position: relative;
+        flex: 1;
+        padding: 12px 8px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .rating-option:hover {
+        background: rgba(245, 158, 11, 0.08);
+        transform: translateY(-2px);
+    }
+
+    .rating-option input[type="radio"] {
+        display: none;
+    }
+
+    .rating-option input[type="radio"]:checked {
+        background: rgba(102, 126, 234, 0.15);
+    }
+
+    .rating-option input[type="radio"]:checked ~ label {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        transform: scale(1.05);
+    }
+
+    .rating-option label {
+        cursor: pointer;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        padding: 10px 12px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        background: white;
+        border: 2px solid #e9ecef;
+        width: 100%;
+        text-align: center;
+    }
+
+    .rating-option label:hover {
+        border-color: #f59e0b;
+        background: rgba(245, 158, 11, 0.05);
+    }
+
+    .rating-option i {
+        color: #f59e0b;
+        font-size: 1.8rem;
+        transition: all 0.2s ease;
+        filter: drop-shadow(0 2px 4px rgba(245, 158, 11, 0.2));
+    }
+
+    .rating-option:hover i {
+        transform: scale(1.3) rotate(15deg);
+        filter: drop-shadow(0 4px 8px rgba(245, 158, 11, 0.4));
+    }
+
+    .rating-option input[type="radio"]:checked ~ label i {
+        color: white;
+        transform: scale(1.4);
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+
+    .textarea-input {
+        width: 100%;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 12px;
+        font-family: inherit;
+        font-size: 0.95rem;
+        resize: vertical;
+        transition: all 0.3s ease;
+        min-height: 150px;
+    }
+
+    .textarea-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .textarea-input.is-invalid {
+        border-color: #dc3545;
+    }
+
+    .textarea-input.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+    }
+
+    .button-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex: 1;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    .btn-cancel {
+        background: #f3f4f6;
+        color: #2d2d2d;
+        border: 2px solid #e5e7eb;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex: 1;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-cancel:hover {
+        background: #e5e7eb;
+        border-color: #d1d5db;
+        color: #2d2d2d;
+    }
+
+    .review-help-text {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 8px;
+    }
+
+    .success-message {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .error-message {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .movie-info-card {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .review-form-card {
+            padding: 20px;
+        }
+
+        .button-group {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<!-- Header -->
+<div class="review-header">
+    <div class="container">
+        <h1>
+            <i class="fas fa-star me-2"></i>
+            {% if is_update %}Update Your Review{% else %}Write a Review{% endif %}
+        </h1>
+        <p style="margin: 0; opacity: 0.95;">Share your thoughts about this movie with other users</p>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <!-- Movie Info -->
+    <div class="movie-info-card">
+        {% if movie.poster %}
+            <img src="{{ movie.poster.url }}" alt="{{ movie.title }}" class="movie-poster-small">
+        {% else %}
+            <div class="movie-poster-small" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-film fa-2x text-white"></i>
+            </div>
+        {% endif %}
+        
+        <div class="movie-details-text">
+            <h4>{{ movie.title }}</h4>
+            <p><strong>Director:</strong> {{ movie.director|default:"Not specified" }}</p>
+            <p><strong>Language:</strong> {{ movie.get_language_display }}</p>
+            <p><strong>Rating:</strong> <i class="fas fa-star" style="color: #f59e0b;"></i> {{ movie.rating }}/10</p>
+        </div>
+    </div>
+
+    <!-- Review Form -->
+    <div class="review-form-card">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="{% if message.tags %}{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if form.non_field_errors %}
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" novalidate>
+            {% csrf_token %}
+
+            <!-- Rating Field -->
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-star me-2" style="color: #f59e0b;"></i>
+                    Your Rating <span style="color: #dc3545;">*</span>
+                </label>
+                
+                <div class="rating-input">
+                    {% for radio in form.rating %}
+                        <div class="rating-option">
+                            {{ radio.tag }}
+                            <label for="{{ radio.id_for_label }}">
+                                {% with rating_value=radio.data %}
+                                    <i class="fas fa-star"></i>
+                                    <span>{{ radio.choice_label }}</span>
+                                {% endwith %}
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {% if form.rating.errors %}
+                    <div class="review-help-text" style="color: #dc3545; margin-top: 12px;">
+                        <i class="fas fa-exclamation-circle me-1"></i>
+                        {% for error in form.rating.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Review Text Field -->
+            <div class="form-group">
+                <label class="form-label" for="{{ form.review_text.id_for_label }}">
+                    <i class="fas fa-comment me-2" style="color: #667eea;"></i>
+                    Your Review <span style="color: #dc3545;">*</span>
+                </label>
+
+                <textarea 
+                    class="textarea-input {% if form.review_text.errors %}is-invalid{% endif %}"
+                    name="review_text"
+                    id="{{ form.review_text.id_for_label }}"
+                    placeholder="Share your thoughts about this movie..."
+                    required
+                >{{ form.review_text.value|default:'' }}</textarea>
+
+                <div class="review-help-text">
+                    Share what you liked or didn't like about this movie. Be constructive and respectful.
+                </div>
+
+                {% if form.review_text.errors %}
+                    <div class="review-help-text" style="color: #dc3545; margin-top: 8px;">
+                        <i class="fas fa-exclamation-circle me-1"></i>
+                        {% for error in form.review_text.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group">
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-check me-2"></i>
+                    {% if is_update %}Update Review{% else %}Submit Review{% endif %}
+                </button>
+                <a href="{% url 'movies:movie_detail' movie.pk %}" class="btn-cancel">
+                    <i class="fas fa-times me-2"></i>
+                    Cancel
+                </a>
+            </div>
+        </form>
+
+        <!-- Info Section -->
+        <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #e5e7eb;">
+            <h5 style="color: #2d2d2d; font-weight: 700; margin-bottom: 15px;">
+                <i class="fas fa-info-circle me-2" style="color: #667eea;"></i>
+                Review Guidelines
+            </h5>
+            <ul style="color: #666; font-size: 0.9rem; line-height: 1.8;">
+                <li>Be honest and constructive in your feedback</li>
+                <li>Avoid spoilers if possible</li>
+                <li>Respect other users' opinions</li>
+                <li>Keep your review appropriate and family-friendly</li>
+                <li>Focus on the movie, not other reviewers</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

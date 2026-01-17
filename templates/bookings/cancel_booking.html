@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_attrs %}data-page="cancel-booking"{% endblock %}
+
+{% block title %}Cancel Booking - {{ booking.booking_id }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Cancel Booking</h5>
+                </div>
+                <div class="card-body">
+                    <p>You're cancelling booking <strong>#{{ booking.booking_id }}</strong>.</p>
+                    <p class="text-muted">Please provide a reason and any cancellation charges below. Refunds will be processed according to our refund policy.</p>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+
+                        <div class="d-grid gap-2 mt-3">
+                            <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+                            <a href="{% url 'bookings:booking_detail' booking.pk %}" class="btn btn-outline-secondary">Keep Booking</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

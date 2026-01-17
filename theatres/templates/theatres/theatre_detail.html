@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ theatre.name }} - CineBook{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Theatre Header -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <h1 class="mb-3">
+                        <i class="fas fa-building"></i> {{ theatre.name }}
+                    </h1>
+                    <p class="text-muted mb-3">{{ theatre.description }}</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-map-marker-alt"></i> Address:</strong><br>
+                                {{ theatre.address }}<br>
+                                {{ theatre.city }}, {{ theatre.state }} {{ theatre.postal_code }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="fas fa-phone"></i> Contact:</strong><br>
+                                {{ theatre.phone_number }}
+                            </p>
+                            <p><strong><i class="fas fa-envelope"></i> Email:</strong><br>
+                                {{ theatre.email }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <p><strong><i class="fas fa-star"></i> Screens:</strong> {{ screens.count }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong><i class="fas fa-chair"></i> Total Seats:</strong> {{ total_seats }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong><i class="fas fa-check-circle"></i> Status:</strong> 
+                                {% if theatre.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screens & Shows -->
+    <h2 class="mb-4">
+        <i class="fas fa-video"></i> Screens & Shows
+    </h2>
+
+    {% if screens_info %}
+        <div class="row">
+            {% for item in screens_info %}
+                {% with screen=item.screen %}
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">{{ screen.name }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2">
+                                <strong><i class="fas fa-chair"></i> Capacity:</strong> {{ item.capacity }} Seats
+                            </p>
+                            <p class="mb-3">
+                                <strong><i class="fas fa-film"></i> Shows:</strong> {{ item.shows|length }}
+                            </p>
+
+                            {% if item.shows %}
+                                <h6>Upcoming Shows ({{ item.shows|length }}):</h6>
+                                <ul class="list-unstyled">
+                                    {% for show in item.shows %}
+                                        <li class="mb-3">
+                                            <div class="d-flex">
+                                                {% if show.poster_url %}
+                                                <img src="{{ show.poster_url }}" alt="{{ show.movie_title }}" class="img-fluid me-3" style="width:80px;height:120px;object-fit:cover;" />
+                                                {% endif %}
+                                                <div class="flex-grow-1">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <strong>{{ show.movie_title }}</strong>
+                                                            <div class="text-muted small">
+                                                                <i class="fas fa-clock"></i>
+                                                                {{ show.show_time|time:"H:i" }} - {{ show.end_time|time:"H:i" }}
+                                                                &nbsp;|&nbsp;
+                                                                {{ show.duration }}
+                                                                &nbsp;|&nbsp;
+                                                                <i class="fas fa-rupee-sign"></i> ₹{{ show.base_ticket_price }}
+                                                                &nbsp;|&nbsp;
+                                                                Seats available: {{ show.available_seats }}
+                                                            </div>
+                                                            <div class="text-muted small mt-1">
+                                                                {{ show.genres }}{% if show.rating %} &nbsp;|&nbsp; ⭐ {{ show.rating }}{% endif %}
+                                                            </div>
+                                                            <div class="mt-2 small text-truncate" style="max-width:420px;">{{ show.description }}</div>
+                                                        </div>
+                                                        <div>
+                                                            <a href="{% url 'theatres:seat_layout' show.id %}" class="btn btn-sm btn-outline-primary">
+                                                                View / Book
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mt-1">
+                                                        <span class="badge bg-info text-dark">Status: {{ show.status }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted text-center">No shows scheduled</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> No screens available for this theatre.
+        </div>
+    {% endif %}
+
+    <!-- Facilities -->
+    {% if theatre.description %}
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="fas fa-star"></i> Facilities</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>{{ theatre.description }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Back Button -->
+    <div class="mt-5">
+        <a href="{% url 'theatres:theatre_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Theatres
+        </a>
+    </div>
+</div>
+{% endblock %}

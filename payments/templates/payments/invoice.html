@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Invoice - {{ invoice.invoice_id }}{% endblock %}
+
+{% block content %}
+<style>
+.invoice-card { max-width: 900px; margin: 30px auto; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 6px 30px rgba(0,0,0,0.08);} 
+.invoice-header { display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.invoice-logo { display:flex; align-items:center; gap:12px; }
+.invoice-title { font-size: 1.25rem; font-weight: 800; color: #2d2d2d; }
+.invoice-meta { text-align: right; color: #666; }
+.invoice-meta div { margin-bottom: 4px; }
+.invoice-body { margin-top: 20px; }
+.invoice-table { width:100%; border-collapse: collapse; margin-top: 12px; }
+.invoice-table th { text-align:left; padding: 10px; background: #f3f4f6; font-weight:700; color:#333; }
+.invoice-table td { padding: 10px; border-bottom: 1px solid #e6e6e6; }
+.invoice-total { display:flex; justify-content:flex-end; margin-top:20px; gap:12px; align-items:center; }
+    .invoice-amount { background: linear-gradient(135deg,var(--accent-color),var(--purple-accent)); color:white; padding:12px 20px; border-radius:8px; font-weight:800; }
+    .invoice-actions { display:flex; gap:12px; margin-top:18px; }
+    .btn-download { padding:10px 14px; background:var(--accent-color); color:white; border-radius:8px; text-decoration:none; font-weight:700; }
+.btn-back { padding:10px 14px; background:#f3f4f6; color:#333; border-radius:8px; text-decoration:none; font-weight:700; }
+@media (max-width:600px) { .invoice-header { flex-direction: column; align-items:flex-start; gap:10px; } .invoice-meta { text-align:left; } }
+</style>
+
+<div class="invoice-card">
+    <div class="invoice-header">
+        <div class="invoice-logo">
+            {% if logo_data %}
+            <img src="{{ logo_data }}" alt="Logo" style="height:48px; border-radius:6px; background:white; padding:6px;"/>
+            {% elif logo_url %}
+            <img src="{{ logo_url }}" alt="Logo" style="height:48px; border-radius:6px; background:white; padding:6px;"/>
+            {% else %}
+            <div style="height:48px; display:flex; align-items:center; padding:6px; font-weight:800; color:var(--accent-color);">CineBook</div>
+            {% endif %}
+            <div>
+                <div class="invoice-title">CineBook Invoice</div>
+                <div style="color:#777; font-size:0.9rem;">Invoice #: <strong>{{ invoice.invoice_id }}</strong></div>
+            </div>
+        </div>
+        <div class="invoice-meta">
+            <div>Invoice Date: {{ invoice.invoice_date|date:"d M Y" }}</div>
+            <div>Due Date: {{ invoice.due_date|date:"d M Y" }}</div>
+            <div>Payment: {{ payment.payment_id }}</div>
+        </div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; gap:20px;">
+        <div>
+            <strong>Bill To</strong>
+            <div>{{ request.user.get_full_name|default:request.user.username }}</div>
+            <div style="color:#666;">{{ request.user.email }}</div>
+        </div>
+        <div style="text-align:right; color:#666;">
+            {% if booking %}
+                <div><strong>Booking ID</strong></div>
+                <div>{{ booking.booking_id }}</div>
+            {% elif food_order %}
+                <div><strong>Food Order</strong></div>
+                <div>#{{ food_order.order_id }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="invoice-body">
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Details</th>
+                    <th style="text-align:right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if booking and tickets %}
+                    {% for t in tickets %}
+                        <tr>
+                            <td style="font-weight:600;">🎫 Ticket</td>
+                            <td>
+                                <div style="font-weight:600; color:var(--accent-color);">{{ t.show.movie.title }}</div>
+                                <div style="font-size:0.9rem; color:#666; margin-top:4px;">
+                                    Seat <strong>{{ t.seat.row }}{{ t.seat.seat_number }}</strong> • {{ t.show.show_date|date:"d M Y" }} at {{ t.show.show_time|time:"H:i" }}<br>
+                                    <span style="font-family:monospace; color:#999;">ID: {{ t.ticket_id }}</span>
+                                </div>
+                            </td>
+                            <td style="text-align:right;">
+                                {% if is_download %}
+                                    <strong style="color:#000; font-size:1.1rem;">₹{{ t.final_price }}</strong>
+                                {% else %}
+                                    <strong style="color:var(--accent-color); font-size:1.1rem;">₹{{ t.final_price }}</strong>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% elif food_order %}
+                    {% for item in food_order.items.all %}
+                        <tr>
+                            <td>{{ item.food_item.name }}</td>
+                            <td>Qty {{ item.quantity }}</td>
+                            <td style="text-align:right;">₹{{ item.total_price }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td>Charge</td>
+                        <td>Payment for booking/order</td>
+                        <td style="text-align:right;">₹{{ payment.total_amount }}</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <div class="invoice-total">
+            <div style="text-align:right;">
+                <div style="color:#666;">Subtotal: ₹{{ invoice.subtotal }}</div>
+                <div style="color:#666;">Tax: ₹{{ invoice.tax }}</div>
+                <div style="margin-top:8px;">Total:</div>
+            </div>
+            {% if is_download %}
+            <div class="invoice-amount" style="background:transparent;color:#000;">₹{{ invoice.total }}</div>
+            {% else %}
+            <div class="invoice-amount">₹{{ invoice.total }}</div>
+            {% endif %}
+        </div>
+
+        {% if not is_download %}
+        <div class="invoice-actions">
+            <a class="btn-download" href="?download=1">Download Invoice</a>
+            {% if booking %}
+                <a class="btn-back" href="{% url 'bookings:booking_detail' booking.pk %}">Back to Booking</a>
+            {% elif food_order %}
+                <a class="btn-back" href="{% url 'food:order_detail' food_order.pk %}">Back to Order</a>
+            {% else %}
+                <a class="btn-back" href="{% url 'movies:movie_list' %}">Home</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

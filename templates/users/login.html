@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_attrs %}data-page="login"{% endblock %}
+
+{% block title %}Login - CineBook{% endblock %}
+
+{% block content %}
+<!-- Login Header -->
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 60px 0 40px;">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold mb-2">Welcome Back!</h1>
+        <p class="lead" style="opacity: 0.95;">Sign in to your CineBook account</p>
+    </div>
+</div>
+
+<!-- Login Form -->
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-5">
+                    <h3 class="card-title text-center fw-bold mb-4">
+                        <i class="fas fa-sign-in-alt me-2" style="color: var(--accent-color);"></i>Login
+                    </h3>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Username Field -->
+                        <div class="mb-4">
+                            <label for="id_username" class="form-label fw-bold">
+                                <i class="fas fa-user me-2" style="color: var(--accent-color);"></i>Username
+                            </label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="alert alert-danger mt-2" style="padding: 8px 12px; font-size: 0.85rem;">
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ form.username.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Password Field -->
+                        <div class="mb-4">
+                            <label for="id_password" class="form-label fw-bold">
+                                <i class="fas fa-lock me-2" style="color: var(--accent-color);"></i>Password
+                            </label>
+                            {{ form.password }}
+                            {% if form.password.errors %}
+                                <div class="alert alert-danger mt-2" style="padding: 8px 12px; font-size: 0.85rem;">
+                                    <i class="fas fa-exclamation-circle me-1"></i>{{ form.password.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary w-100 btn-lg fw-bold mb-4">
+                            <i class="fas fa-arrow-right me-2"></i>Sign In
+                        </button>
+                    </form>
+                    
+                    <!-- Divider -->
+                    <div style="position: relative; text-align: center; margin: 20px 0;">
+                        <hr>
+                        <span style="background: white; padding: 0 10px; color: var(--text-light); font-size: 0.85rem;">OR</span>
+                    </div>
+                    
+                    <!-- Register Link -->
+                    <div class="text-center">
+                        <p style="color: var(--text-light); margin-bottom: 15px;">New to CineBook?</p>
+                        <a href="{% url 'users:register' %}" class="btn btn-outline-primary w-100 btn-lg fw-bold">
+                            <i class="fas fa-user-plus me-2"></i>Create Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Info Card -->
+            <div class="card border-0 shadow-sm mt-4" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-left: 4px solid var(--accent-color);">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3">Quick Access</h6>
+                    <ul style="margin-left: 20px; margin-bottom: 0;">
+                        <li>Book your favorite movies</li>
+                        <li>Order food & beverages</li>
+                        <li>View all your bookings</li>
+                        <li>Manage your profile</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #id_username, #id_password {
+        border-radius: 10px !important;
+    }
+</style>
+{% endblock %}

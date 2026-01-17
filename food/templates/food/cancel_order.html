@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cancel Order - {{ food_order.order_id }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">Cancel Order</h5>
+                </div>
+                <div class="card-body">
+                    <p>Are you sure you want to cancel order <strong>#{{ food_order.order_id }}</strong>?</p>
+                    <p class="text-muted">This action cannot be undone. If payment was made, it will be marked as cancelled and refund process (if any) will be handled separately.</p>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger">Yes, cancel my order</button>
+                            <a href="{% url 'food:order_detail' pk=food_order.pk %}" class="btn btn-outline-secondary">No, go back</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Seat Selection - CineBook{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4"><i class="fas fa-chair"></i> Select Seats</h1>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Show Details -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>{{ show.movie.title }}</h5>
+                    <p class="text-muted">
+                        <i class="fas fa-calendar"></i> {{ show.show_date|date:"d M Y" }} | 
+                        <i class="fas fa-clock"></i> {{ show.show_time|time:"H:i" }}
+                    </p>
+                    <p>
+                        <strong>Theatre:</strong> {{ show.screen.theatre.name }}<br>
+                        <strong>Screen:</strong> {{ show.screen.name }}<br>
+                        <strong>Ticket Price:</strong> ₹{{ show.base_ticket_price }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Seat Layout -->
+            <form method="post" action="{% url 'bookings:create_booking' %}">
+                {% csrf_token %}
+                <input type="hidden" name="show_id" value="{{ show.id }}">
+                <input type="hidden" name="discount" value="0">
+
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-film"></i> SCREEN</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="seat-container">
+                            {% for row, seats_list in seats_by_row.items %}
+                                <div class="seat-row mb-3">
+                                    <div class="row-label me-3">{{ row }}</div>
+                                    <div class="seats">
+                                        {% for seat in seats_list %}
+                                            <div class="seat-wrapper">
+                                                {% if seat.id in booked_seat_ids %}
+                                                    <div class="seat seat-booked" title="{{ seat.row }}{{ seat.seat_number }} - Booked">
+                                                        <i class="fas fa-chair"></i>
+                                                    </div>
+                                                {% else %}
+                                                    <label class="seat-label">
+                                                        <input type="checkbox" name="seats" value="{{ seat.id }}" class="seat-checkbox" data-seat-label="{{ seat.row }}{{ seat.seat_number }}" data-seat-price="{{ seat.base_price }}">
+                                                        <div class="seat seat-available" title="{{ seat.row }}{{ seat.seat_number }} - ₹{{ seat.base_price }}">
+                                                            <i class="fas fa-chair"></i>
+                                                        </div>
+                                                    </label>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="seat-legend mt-5">
+                            <div class="legend-item">
+                                <div class="seat seat-available" style="display:inline-block;"></div> Available
+                            </div>
+                            <div class="legend-item">
+                                <div class="seat seat-booked" style="display:inline-block;"></div> Booked
+                            </div>
+                            <div class="legend-item">
+                                <div class="seat seat-selected" style="display:inline-block;"></div> Selected
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <p>Selected Seats: <strong id="selected-seats">None</strong></p>
+                        <p>Total Amount: <strong id="total-amount">₹0</strong></p>
+                        {% if user.is_authenticated %}
+                        <button type="submit" class="btn btn-primary btn-lg" id="book-btn" disabled>
+                            Proceed to Payment
+                        </button>
+                        <a href="{% url 'theatres:theatre_detail' show.screen.theatre.id %}" class="btn btn-secondary btn-lg">
+                            Cancel
+                        </a>
+                        {% else %}
+                        <a href="{% url 'users:login' %}?next={% url 'theatres:seat_layout' show.id %}" class="btn btn-primary btn-lg">
+                            Login to Book
+                        </a>
+                        <a href="{% url 'theatres:theatre_detail' show.screen.theatre.id %}" class="btn btn-secondary btn-lg">
+                            Cancel
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card sticky-top">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Booking Summary</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Movie:</strong><br>{{ show.movie.title }}</p>
+                    <p><strong>Show Time:</strong><br>{{ show.show_time|time:"H:i" }} - {{ show.end_time|time:"H:i" }}</p>
+                    <p><strong>Date:</strong><br>{{ show.show_date|date:"d M Y" }}</p>
+                    <hr>
+                    <p id="summary-seats">Selected Seats: None</p>
+                    <p id="summary-price">Price per Seat: ₹{{ show.base_ticket_price }}</p>
+                    <p id="summary-total" class="fs-5"><strong>Total: ₹0</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .seat-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+
+    .seat-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .row-label {
+        font-weight: bold;
+        width: 30px;
+        text-align: center;
+    }
+
+    .seats {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .seat-wrapper {
+        position: relative;
+    }
+
+    .seat-label {
+        cursor: pointer;
+        position: relative;
+    }
+
+    .seat-checkbox {
+        display: none;
+    }
+
+    .seat {
+        width: 35px;
+        height: 35px;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .seat-available {
+        background: #e8f5e9;
+        border-color: #4caf50;
+        color: #4caf50;
+        cursor: pointer;
+    }
+
+    .seat-available:hover {
+        background: #c8e6c9;
+        transform: scale(1.1);
+    }
+
+    .seat-booked {
+        background: #ffebee;
+        border-color: #f44336;
+        color: #f44336;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .seat-checkbox:checked + .seat-available {
+        background: #2196f3;
+        border-color: #1976d2;
+        color: white;
+    }
+
+    .seat-legend {
+        display: flex;
+        gap: 30px;
+        justify-content: center;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+</style>
+
+<script>
+    (function() {
+        const defaultPricePerSeat = parseFloat("{{ show.base_ticket_price }}");
+        const bookBtn = document.getElementById('book-btn');
+        const selectedSeatsDisplay = document.getElementById('selected-seats');
+        const totalAmountDisplay = document.getElementById('total-amount');
+        const summarySeatsDisplay = document.getElementById('summary-seats');
+        const summaryTotalDisplay = document.getElementById('summary-total');
+
+        // Safely attach change listeners (no-op if no checkboxes)
+        const seatCheckboxes = Array.from(document.querySelectorAll('.seat-checkbox'));
+        seatCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSummary);
+        });
+
+        function updateSummary() {
+            const selectedCheckboxes = Array.from(document.querySelectorAll('.seat-checkbox:checked'));
+            const selectedSeatsArr = selectedCheckboxes.map(cb => cb.dataset.seatLabel || (cb.closest('.seat-wrapper') && cb.closest('.seat-wrapper').textContent.trim()) || '');
+            const selectedSeats = selectedSeatsArr.filter(Boolean).join(', ');
+
+            // Sum individual seat prices (use data-seat-price if available, else fallback to default show price)
+            let totalPrice = 0;
+            selectedCheckboxes.forEach(cb => {
+                const p = parseFloat(cb.dataset.seatPrice || defaultPricePerSeat) || 0;
+                totalPrice += p;
+            });
+
+            const selectedCount = selectedCheckboxes.length;
+
+            if (selectedSeatsDisplay) selectedSeatsDisplay.textContent = selectedCount > 0 ? selectedSeats : 'None';
+            if (totalAmountDisplay) totalAmountDisplay.textContent = '₹' + totalPrice.toFixed(2);
+            if (summarySeatsDisplay) summarySeatsDisplay.textContent = 'Selected Seats: ' + (selectedCount > 0 ? selectedSeats : 'None');
+            if (summaryTotalDisplay) summaryTotalDisplay.innerHTML = '<strong>Total: ₹' + totalPrice.toFixed(2) + '</strong>';
+
+            if (bookBtn) bookBtn.disabled = selectedCount === 0;
+        }
+
+        // Initialize summary once
+        updateSummary();
+    })();
+</script>
+{% endblock %}

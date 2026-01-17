@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ food_item.name }} - CineBook{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div style="background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%); color: white; padding: 40px 0;">
+    <div class="container">
+        <a href="{% url 'food:menu' %}" class="btn btn-light btn-sm mb-3" style="width: fit-content;">
+            <i class="fas fa-arrow-left me-2"></i>Back to Menu
+        </a>
+        <h1 class="display-5 fw-bold mb-0">{{ food_item.name }}</h1>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container py-5">
+    <div class="row g-4">
+        <!-- Food Image -->
+        <div class="col-lg-5 col-md-6">
+            {% if food_item.image %}
+                <img src="{{ food_item.image.url }}" alt="{{ food_item.name }}" class="img-fluid rounded-4 shadow-lg" style="width: 100%; object-fit: cover;">
+            {% else %}
+                <div class="bg-light rounded-4 shadow d-flex align-items-center justify-content-center" style="height: 400px;">
+                    <i class="fas fa-utensils fa-5x text-secondary"></i>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Food Details -->
+        <div class="col-lg-7 col-md-6">
+            <!-- Title and Badges -->
+            <div class="mb-4">
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="badge bg-info fw-bold" style="padding: 8px 12px; font-size: 0.85rem;">
+                        <i class="fas fa-tag me-1"></i>{{ food_item.category.name }}
+                    </span>
+                    {% if food_item.is_vegetarian %}
+                        <span class="badge bg-success fw-bold" style="padding: 8px 12px; font-size: 0.85rem;">
+                            <i class="fas fa-leaf me-1"></i>Vegetarian
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger fw-bold" style="padding: 8px 12px; font-size: 0.85rem;">
+                            <i class="fas fa-drumstick-bite me-1"></i>Non-Veg
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Price -->
+            <div class="mb-4">
+                <h2 class="fw-bold mb-2" style="color: var(--secondary-color); font-size: 2.5rem;">
+                    <i class="fas fa-rupee-sign"></i>{{ food_item.price }}
+                </h2>
+                <small style="color: var(--text-light);">Per {{ food_item.quantity_unit }}</small>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+                <h5 class="fw-bold mb-3">Description</h5>
+                <p style="color: var(--text-light); font-size: 1.05rem; line-height: 1.8;">{{ food_item.description }}</p>
+            </div>
+
+            <!-- Allergen Info -->
+            {% if food_item.contains_nuts or food_item.contains_dairy or food_item.contains_gluten %}
+                <div class="alert alert-warning border-0 mb-4" style="border-left: 4px solid #ff6b35; background: #fff8f0;">
+                    <strong><i class="fas fa-exclamation-triangle me-2"></i>Allergen Information:</strong>
+                    <div class="mt-3 d-flex flex-wrap gap-2">
+                        {% if food_item.contains_nuts %}
+                            <span class="badge bg-warning text-dark fw-bold">
+                                <i class="fas fa-peanuts me-1"></i>Contains Nuts
+                            </span>
+                        {% endif %}
+                        {% if food_item.contains_dairy %}
+                            <span class="badge bg-warning text-dark fw-bold">
+                                <i class="fas fa-cow me-1"></i>Contains Dairy
+                            </span>
+                        {% endif %}
+                        {% if food_item.contains_gluten %}
+                            <span class="badge bg-warning text-dark fw-bold">
+                                <i class="fas fa-wheat me-1"></i>Contains Gluten
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Availability -->
+            {% if food_item.is_available %}
+                <div class="alert alert-success border-0 mb-4" style="border-left: 4px solid #28a745; background: #f0f9f5;">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <strong>Available</strong> - {{ food_item.available_quantity }} in stock
+                </div>
+            {% else %}
+                <div class="alert alert-danger border-0 mb-4" style="border-left: 4px solid #dc3545; background: #fef5f5;">
+                    <i class="fas fa-times-circle me-2"></i>
+                    <strong>Currently Unavailable</strong>
+                </div>
+            {% endif %}
+
+            <!-- Add to Cart Form -->
+            {% if food_item.is_available and user.is_authenticated %}
+                <form method="POST" action="{% url 'food:add_to_cart' food_item.pk %}" class="card border-0 shadow-sm p-4 mb-4">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="quantity" class="form-label fw-bold">
+                                <i class="fas fa-box me-2" style="color: var(--accent-color);"></i>Quantity
+                            </label>
+                            <input type="number" id="quantity" name="quantity" class="form-control form-control-lg" 
+                                   value="1" min="1" max="{{ food_item.available_quantity }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="special_instructions" class="form-label fw-bold">
+                                <i class="fas fa-note-sticky me-2" style="color: var(--accent-color);"></i>Special Request
+                            </label>
+                            <input type="text" id="special_instructions" name="special_instructions" 
+                                   class="form-control form-control-lg" placeholder="e.g., Extra salt, no onions">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold">
+                        <i class="fas fa-shopping-cart me-2"></i>Add to Cart
+                    </button>
+                </form>
+            {% elif not user.is_authenticated %}
+                <div class="card border-0 shadow-sm p-4 mb-4" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));">
+                    <p class="mb-3" style="color: var(--text-light);">
+                        <i class="fas fa-lock me-2" style="color: var(--accent-color);"></i>
+                        <strong>Sign in to order this item</strong>
+                    </p>
+                    <a href="{% url 'users:login' %}" class="btn btn-primary btn-lg fw-bold">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login Now
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="row mt-5">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg mb-5">
+                <div class="card-header" style="background: linear-gradient(135deg, #ff6b35, #ff8c42); color: white;">
+                    <h4 class="fw-bold mb-0">
+                        <i class="fas fa-star me-2"></i>Customer Reviews & Ratings
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    {% if reviews %}
+                        <!-- Average Rating -->
+                        <div class="mb-5 pb-4" style="border-bottom: 2px solid #e0e0e0;">
+                            <h5 class="fw-bold mb-2">Average Rating</h5>
+                            <div class="d-flex align-items-center gap-3">
+                                <div>
+                                    {% for i in "12345" %}
+                                        {% if i|add:0 <= average_rating %}
+                                            <i class="fas fa-star" style="color: #ffd700; font-size: 1.5rem;"></i>
+                                        {% else %}
+                                            <i class="fas fa-star" style="color: #ddd; font-size: 1.5rem;"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div>
+                                    <h4 class="fw-bold mb-0">{{ average_rating|default:"N/A" }}/5.0</h4>
+                                    <small style="color: var(--text-light);">Based on customer reviews</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reviews List -->
+                        {% for review in reviews %}
+                            <div class="mb-4 pb-4" style="border-bottom: 1px solid #e0e0e0;">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="fw-bold mb-1">{{ review.user.first_name }} {{ review.user.last_name }}</h6>
+                                        <small style="color: var(--text-light);">
+                                            <i class="fas fa-calendar me-1"></i>{{ review.created_at|date:"M d, Y" }}
+                                        </small>
+                                    </div>
+                                    <div>
+                                        {% for i in "12345" %}
+                                            {% if i|add:0 <= review.rating %}
+                                                <i class="fas fa-star" style="color: #ffd700;"></i>
+                                            {% else %}
+                                                <i class="fas fa-star" style="color: #ddd;"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <p class="text-muted mb-0">{{ review.review_text }}</p>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-4">
+                            <i class="fas fa-inbox fa-3x mb-3 d-block" style="opacity: 0.3;"></i>
+                            No reviews yet. Be the first to share your experience!
+                        </p>
+                    {% endif %}
+
+                    <!-- Add Review Form -->
+                    {% if user.is_authenticated %}
+                        <hr class="my-4">
+                        <h5 class="fw-bold mb-4">
+                            <i class="fas fa-pen me-2" style="color: var(--secondary-color);"></i>Leave a Review
+                        </h5>
+                        <form method="POST" action="{% url 'food:submit_review' food_item.pk %}">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label for="rating" class="form-label fw-bold">
+                                    <i class="fas fa-star me-2" style="color: var(--secondary-color);"></i>Your Rating
+                                </label>
+                                <select id="rating" name="rating" class="form-select form-select-lg" required>
+                                    <option value="">Select a rating...</option>
+                                    <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                                    <option value="4">⭐⭐⭐⭐ Good</option>
+                                    <option value="3">⭐⭐⭐ Average</option>
+                                    <option value="2">⭐⭐ Poor</option>
+                                    <option value="1">⭐ Bad</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label for="review_text" class="form-label fw-bold">
+                                    <i class="fas fa-comment me-2" style="color: var(--secondary-color);"></i>Your Comment
+                                </label>
+                                <textarea id="review_text" name="review_text" class="form-control" 
+                                          rows="4" placeholder="Share your experience with this item..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Review
+                            </button>
+                        </form>
+                    {% else %}
+                        <hr class="my-4">
+                        <div class="alert alert-info border-0">
+                            <a href="{% url 'users:login' %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-sign-in-alt me-1"></i>Login to leave a review
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Info -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Item Details
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-4 pb-4" style="border-bottom: 1px solid #e0e0e0;">
+                        <small style="color: var(--text-light); display: block; margin-bottom: 8px;">
+                            <i class="fas fa-tag me-2" style="color: var(--accent-color);"></i>Category
+                        </small>
+                        <div class="fw-bold">{{ food_item.category.name }}</div>
+                    </div>
+                    
+                    <div class="mb-4 pb-4" style="border-bottom: 1px solid #e0e0e0;">
+                        <small style="color: var(--text-light); display: block; margin-bottom: 8px;">
+                            <i class="fas fa-cube me-2" style="color: var(--accent-color);"></i>Quantity Unit
+                        </small>
+                        <div class="fw-bold">{{ food_item.quantity_unit }}</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <small style="color: var(--text-light); display: block; margin-bottom: 8px;">
+                            <i class="fas fa-box-open me-2" style="color: var(--accent-color);"></i>Availability
+                        </small>
+                        {% if food_item.is_available %}
+                            <span class="badge bg-success fw-bold" style="padding: 8px 12px; font-size: 0.85rem;">
+                                <i class="fas fa-check-circle me-1"></i>In Stock
+                            </span>
+                        {% else %}
+                            <span class="badge bg-danger fw-bold" style="padding: 8px 12px; font-size: 0.85rem;">
+                                <i class="fas fa-times-circle me-1"></i>Out of Stock
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #quantity, #special_instructions, #rating, #review_text {
+        border-radius: 10px !important;
+    }
+</style>
+{% endblock %}

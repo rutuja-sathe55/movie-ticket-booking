@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_attrs %}data-page="payment-gateway"{% endblock %}
+
+{% block title %}Payment - CineBook{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Complete Payment</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6>Booking Details</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td>Booking ID:</td>
+                                <td><strong>{{ booking.booking_id }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td>Movie:</td>
+                                <td>{{ booking.show.movie.title }}</td>
+                            </tr>
+                            <tr>
+                                <td>Amount:</td>
+                                <td><strong>₹{{ booking.final_amount }}</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Select Payment Method</label>
+                            {{ form.payment_method }}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">Proceed to Payment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order #{{ food_order.order_id }} - CineBook{% endblock %}
+
+{% block content %}
+<style>
+    .order-detail-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 30px 0;
+        margin-bottom: 40px;
+        border-bottom: 3px solid #667eea;
+        color: white;
+    }
+
+    .order-detail-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .detail-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+
+    .detail-card:hover {
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+
+    .card-header-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px 20px;
+        border: none;
+    }
+
+    .card-header-custom h5 {
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .status-badge-detail {
+        display: inline-block;
+        padding: 8px 14px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+
+    .status-pending { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+    .status-preparing { background: rgba(33, 150, 243, 0.2); color: #2196f3; }
+    .status-ready { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
+    .status-delivered { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
+    .status-cancelled { background: rgba(244, 67, 54, 0.2); color: #f44336; }
+
+    .status-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .order-item h6 {
+        font-weight: 600;
+        color: #2d2d2d;
+        margin: 0 0 8px 0;
+    }
+
+    .item-details {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .item-price {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #667eea;
+        text-align: right;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        font-size: 0.95rem;
+    }
+
+    .summary-row strong {
+        font-weight: 700;
+        color: #2d2d2d;
+    }
+
+    .total-amount {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        padding: 20px;
+        border-radius: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px 0;
+    }
+
+    .total-price {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .theatre-info {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-left: 4px solid #667eea;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 15px 0;
+    }
+
+    .theatre-info h6 {
+        color: #667eea;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .theatre-info p {
+        margin: 4px 0;
+    }
+
+    .special-instructions {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-left: 4px solid #667eea;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 15px 0;
+        font-style: italic;
+        color: #2d2d2d;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .btn-back {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-order-more {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+
+    .btn-order-more:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+
+    .btn-cancel-order {
+        background: rgba(239, 68, 68, 0.9);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cancel-order:hover {
+        background: rgba(220, 38, 38, 1);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+        color: white;
+    }
+
+    .time-info {
+        font-size: 0.95rem;
+        color: #667eea;
+        font-weight: 600;
+        margin-top: 10px;
+        padding: 10px;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 6px;
+    }
+
+    @media (max-width: 768px) {
+        .detail-card {
+            margin-bottom: 15px;
+        }
+        .sticky-top {
+            position: static !important;
+        }
+    }
+</style>
+
+<div class="order-detail-header">
+    <div class="container">
+        <h1><i class="fas fa-bag-shopping me-3"></i>Order #{{ food_order.order_id }}</h1>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- Order Status -->
+            <div class="detail-card">
+                <div class="card-header-custom">
+                    <h5><i class="fas fa-info-circle me-2"></i>Order Status</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="status-info">
+                        <div>
+                            <p class="mb-2" style="font-weight: 600; color: #2d2d2d;">Current Status</p>
+                            <span class="status-badge-detail status-{{ food_order.status|lower }}">
+                                {% if food_order.status == 'pending' %}
+                                    <i class="fas fa-hourglass-start me-1"></i>Pending
+                                {% elif food_order.status == 'preparing' %}
+                                    <i class="fas fa-fire me-1"></i>Preparing
+                                {% elif food_order.status == 'ready' %}
+                                    <i class="fas fa-check-circle me-1"></i>Ready
+                                {% elif food_order.status == 'delivered' %}
+                                    <i class="fas fa-check-double me-1"></i>Delivered
+                                {% else %}
+                                    <i class="fas fa-ban me-1"></i>Cancelled
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div style="text-align: right;">
+                            <p class="mb-2" style="font-weight: 600; color: #2d2d2d;">Order Date</p>
+                            <span style="color: #666; font-size: 0.95rem;">{{ food_order.created_at|date:"d M Y, H:i" }}</span>
+                        </div>
+                    </div>
+                    {% if food_order.estimated_ready_time %}
+                        <div class="time-info">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong>Estimated Ready Time:</strong> {{ food_order.estimated_ready_time|date:"d M Y, H:i" }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="detail-card">
+                <div class="card-header-custom">
+                    <h5><i class="fas fa-list me-2"></i>Order Items</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% for item in items %}
+                        <div class="order-item">
+                            <div class="flex-grow-1">
+                                <h6><i class="fas fa-drumstick-bite me-2" style="color: #667eea;"></i>{{ item.food_item.name }}</h6>
+                                <div class="item-details">
+                                    <div class="mb-2">
+                                        <i class="fas fa-cube me-1" style="color: #667eea;"></i>
+                                        <span style="font-weight: 600;">{{ item.quantity }}</span> × ₹<span style="font-weight: 600;">{{ item.unit_price }}</span>
+                                    </div>
+                                    {% if item.special_instructions %}
+                                        <div style="margin-top: 8px; padding: 8px; background: rgba(102, 126, 234, 0.05); border-radius: 6px; font-style: italic;">
+                                            <i class="fas fa-comment me-1" style="color: #667eea;"></i>{{ item.special_instructions }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="item-price ms-3">₹{{ item.total_price }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Special Instructions -->
+            {% if food_order.special_instructions %}
+                <div class="detail-card">
+                    <div class="card-header-custom">
+                        <h5><i class="fas fa-comment me-2"></i>Special Instructions</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="special-instructions">
+                            {{ food_order.special_instructions }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Order Summary Sidebar -->
+        <div class="col-lg-4">
+            <div class="detail-card" style="position: sticky; top: 100px;">
+                <div class="card-header-custom">
+                    <h5><i class="fas fa-receipt me-2"></i>Order Summary</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="summary-row">
+                        <span><i class="fas fa-receipt me-2" style="color: #667eea;"></i>Subtotal</span>
+                        <strong>₹{{ food_order.total_amount }}</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span><i class="fas fa-percent me-2" style="color: #764ba2;"></i>Tax</span>
+                        <strong>₹{{ food_order.tax }}</strong>
+                    </div>
+                    <div class="summary-row mb-3 pb-3 border-bottom">
+                        <span><i class="fas fa-tag me-2" style="color: #10b981;"></i>Discount</span>
+                        <strong class="text-success">-₹{{ food_order.discount }}</strong>
+                    </div>
+
+                    <div class="total-amount">
+                        <div>
+                            <p class="mb-0 text-muted">Total Amount</p>
+                            <p class="mb-0" style="font-weight: 600; color: #2d2d2d;">to Pay</p>
+                        </div>
+                        <div class="total-price">₹{{ food_order.final_amount }}</div>
+                    </div>
+
+                    <!-- Theatre Info -->
+                    <div class="theatre-info">
+                        <h6><i class="fas fa-map-marker-alt me-2"></i>Pickup Location</h6>
+                        <p class="mb-1" style="font-weight: 600; font-size: 1rem;">{{ food_order.theatre.name }}</p>
+                        <p class="text-muted mb-0" style="font-size: 0.9rem;">{{ food_order.theatre.city }}</p>
+                    </div>
+
+                    <!-- Booking Info (if linked) -->
+                    {% if food_order.booking %}
+                        <div class="theatre-info" style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%); border-left-color: #22c55e;">
+                            <h6 style="color: #22c55e;"><i class="fas fa-link me-2"></i>Linked Booking</h6>
+                            <p class="mb-2" style="font-size: 0.95rem;">
+                                <i class="fas fa-ticket-alt me-1"></i>Booking #{{ food_order.booking.booking_reference }}
+                            </p>
+                            <a href="{% url 'bookings:booking_detail' food_order.booking.pk %}" class="btn btn-sm" style="background: #22c55e; color: white; border-radius: 6px; font-weight: 600; text-decoration: none;">
+                                <i class="fas fa-arrow-right me-1"></i> View Booking
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <a href="{% url 'food:order_list' %}" class="btn btn-back btn-sm">
+                            <i class="fas fa-arrow-left me-2"></i> Back to Orders
+                        </a>
+                        <a href="{% url 'food:menu' %}" class="btn btn-order-more btn-sm">
+                            <i class="fas fa-utensils me-2"></i> Order More
+                        </a>
+                        {% if food_order.status == 'pending' or food_order.status == 'preparing' %}
+                            <a href="{% url 'food:cancel_order' pk=food_order.pk %}" class="btn btn-cancel-order btn-sm">
+                                <i class="fas fa-times me-2"></i> Cancel Order
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
