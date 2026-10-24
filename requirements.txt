@@ -1,0 +1,6 @@
+Django==4.2.23
+python-decouple==3.8
+Pillow==10.4.0
+qrcode==8.0
+razorpay==1.4.0
+gunicorn==23.0.0
